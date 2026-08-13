@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kawã Lucca</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="conteudo">
+
+        <h1>Oi, eu sou o Kawã Lucca!</h1>
+
+        <img
+            id="minha-foto"
+            src="img/image.png"
+            alt="Esse ai sou eu!"
+        >
+
+        <h2>Sobre mim</h2>
+
+        <p>
+            Olá! Meu nome é Kawã Lucca e sou estudante de Engenharia da Computação.
+            Tenho bastante interesse por tecnologia, desde sempre gostei muito de computadores,
+            principalmente de jogos e de dar uma fuçada neles com mods. E por isso, acabei indo para a area de computação.
+        </p>
+
+        <p>
+            Atualmente estou conhecendo um pouco mais sobre desenvolvimento web
+            e também iniciando meus estudos em Computação Gráfica no CEFET-MG.
+        </p>
+
+        <p>
+            No meu tempo livre gosto de jogar, sair com meus amigos, com a minha namorada
+            e jogar futebol.
+        </p>
+
+        <button id="botao-tema">
+            Clique aqui
+        </button>
+
+        <p id="mensagem"></p>
+
+    </main>
+
+
+    <script>
+
+        const botao = document.getElementById("botao-tema");
+        const mensagem = document.getElementById("mensagem");
+
+        botao.addEventListener("click", function() {
+
+            document.body.classList.toggle("tema-escuro");
+
+            if (document.body.classList.contains("tema-escuro")) {
+
+                mensagem.textContent = "Não gosta de pagina muito clara né? Tamo junto!";
+
+                botao.textContent = "Voltar ao tema claro";
+
+            } else {
+
+                mensagem.textContent = "Pra que toda essa luz meu amigo, vai com calma!";
+
+                botao.textContent = "Clique aqui";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
