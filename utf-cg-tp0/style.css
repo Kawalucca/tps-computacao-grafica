@@ -55,6 +55,10 @@ button {
     cursor: pointer;
 }
 
+button:hover { // Interação do mouse com o botão ao passar por cima dele.
+    background-color: #041b32;
+}
+
 .tema-escuro {
     background-color: #222222;
 
@@ -70,4 +74,67 @@ button {
 .tema-escuro h1,
 .tema-escuro h2 {
     color: #8fc8ff;
+}
+
+
+/*PARTE ABAIXO FOI COPIADA E ADAPTADA DE UM CODIGO DISPONIBILIZADO AQUI: https://prismic-io.translate.goog/blog/css-button-animations?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc&_x_tr_hist=true
+ PARA DEIXAR O SITE UM POUCO MAIS BONITO, PORQUE EU ESTAVA ACHANDO MUITO FEIO. SEM MERITO MEU NESSA PARTE, MUITO MENOS CONHECIMENTO SOBRE TUDO QUE ACONTECE.*/
+.glow-on-hover {
+    width: 220px;
+    height: 50px;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #d2cf27, #ff7300, #d2cf27);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:active {
+    color: #ffffff
+}
+
+.glow-on-hover:active:after {
+    background: transparent;
+}
+
+.glow-on-hover:hover:before {
+    opacity: 1;
+}
+
+.glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #010101;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
 }
