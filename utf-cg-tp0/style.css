@@ -32,11 +32,13 @@ h1 { // Estilo para o título principal
 
 h2 { // Estilo para os subtítulos
     color: #1f4e79;
+    text-align: center;
 }
 
 
 p { // Estilo para os textos normais(paragrafos)
     color: #1f4e79;
+    text-align: justify;
 }
 
 button {
@@ -137,4 +139,28 @@ button:hover { // Interação do mouse com o botão ao passar por cima dele.
     0% { background-position: 0 0; }
     50% { background-position: 400% 0; }
     100% { background-position: 0 0; }
+}
+
+/*Quando eu estava escrevendo o titulo do site, eu pensei na referencia da frase classica do Goku, 
+e como estava achando meu site muito feio em relação ao de alguns amigos meus, pesquisei como fazia isso,
+e decidi inovar com mais essa alteração.*/
+.mudar {
+    position: relative;
+    display: inline-block;
+    color: #333333; 
+}
+
+.tema-escuro .mudar {
+    color: #8fc8ff;
+}
+
+.mudar:hover {
+    color: transparent; 
+}
+
+.mudar:hover::after {
+    content: "Goku!";
+    position: absolute;
+    left: 0;
+    color: rgb(255, 132, 0);
 }
