@@ -48,7 +48,7 @@ button {
 
     border: none;
 
-    padding: 10px 20px;
+    padding: 10px 10px;
 
     font-size: 16px;
 
@@ -62,7 +62,7 @@ button:hover { // Interação do mouse com o botão ao passar por cima dele.
 }
 
 .tema-escuro {
-    background-color: #222222;
+    background-color: #222121;
 
     color: white;
 }
@@ -76,6 +76,23 @@ button:hover { // Interação do mouse com o botão ao passar por cima dele.
 .tema-escuro h1,
 .tema-escuro h2 {
     color: #8fc8ff;
+}
+
+.bloco-texto {
+    background-color: #e8eef4;
+    padding: 15px;
+    margin: 20px 0;
+    border: 3px solid #0bc1ea;
+    border-radius: 10px;
+}
+
+.tema-escuro .bloco-texto {
+    background-color: #2b2a2a;
+}
+
+.bloco-texto p {
+    margin: 0;
+    line-height: 1.5;
 }
 
 
@@ -96,7 +113,7 @@ button:hover { // Interação do mouse com o botão ao passar por cima dele.
 
 .glow-on-hover:before {
     content: '';
-    background: linear-gradient(45deg, #d2cf27, #ff7300, #d2cf27);
+    background: linear-gradient(45deg, #d2cf27, #ff7300, #f51010);
     position: absolute;
     top: -2px;
     left:-2px;
