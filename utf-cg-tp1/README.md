@@ -1,1 +1,1 @@
-Criando so para criar o repositorio
+commit inicial: criar o repositório compartilhado
