@@ -52,3 +52,22 @@ body {
   text-align: center;
   line-height: 1.5;
 }
+
+/* duplo clique / arrastar no jogo não deve selecionar texto da página */
+#jogo {
+  user-select: none;
+}
+
+/* mensagens de erro podem ter várias linhas (ex.: log de compilação de shader) */
+#hud.erro {
+  white-space: pre-wrap;
+}
+
+/* painel de depuração (fps e posição do mouse); remover na Fase 3 */
+#hud .debug {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  font: 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  opacity: 0.85;
+}
