@@ -1,7 +1,6 @@
-// Loop principal do jogo (aula 6): a cada quadro, atualiza o ESTADO do jogo
-// e depois desenha o estado atual.
+// Loop principal do jogo (aula 6): a cada quadro, atualiza o ESTADO do jogo e depois desenha o estado atual.
 //
-// Diferenças em relação ao exemplo do slide:
+// Diferenças em relação ao exemplo do slide da aula:
 //   - dt em SEGUNDOS (velocidade = unidades do mundo por segundo);
 //   - dt limitado: se a aba ficar em segundo plano, o requestAnimationFrame
 //     pausa; ao voltar, um dt gigante faria os inimigos "teleportarem".
