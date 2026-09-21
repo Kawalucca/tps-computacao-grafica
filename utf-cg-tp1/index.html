@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tower Defense Naval</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- Caminhos sempre relativos (sem "/" no início): no GitHub Pages o jogo
+       fica em /nome-do-repositorio/, e um caminho absoluto quebraria. -->
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <main id="jogo">
+    <canvas id="tela-webgl" width="1280" height="720"></canvas>
+    <!-- HTML sobreposto ao canvas: HUD, menus, game over (aula 7, abordagem 1) -->
+    <div id="hud"></div>
+  </main>
+</body>
+</html>

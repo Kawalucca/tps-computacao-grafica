@@ -1,0 +1,54 @@
+:root {
+  --fundo-pagina: #071a26;
+  --texto: #e8f1f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  background: var(--fundo-pagina);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Área do jogo: sempre 16:9, ocupando o máximo possível da janela e
+   centralizada (sobram faixas escuras nas laterais ou em cima/embaixo). */
+#jogo {
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  width: min(100vw, calc(100dvh * 16 / 9));
+  aspect-ratio: 16 / 9;
+}
+
+#tela-webgl {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Camada de HTML por cima do canvas. Não intercepta o mouse, para que os
+   cliques cheguem ao canvas; elementos interativos (botões de menu, por
+   exemplo) devem declarar pointer-events: auto. */
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#hud.erro {
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  text-align: center;
+  line-height: 1.5;
+}
