@@ -4,40 +4,34 @@ import { LARGURA_MUNDO, ALTURA_MUNDO, criarProjecao, observarTamanho } from './e
 import { carregarTextura } from './engine/textura.js'
 import { RenderizadorSprites } from './engine/renderizador-sprites.js'
 import { criarEntrada } from './engine/entrada.js'
+import { criarFarol, atualizarFarol, FAROL_LAMPADA } from './game/farol.js'
+import { criarBarco, atualizarBarco } from './game/barco.js'
 
-// FASE 1 — cena de teste do motor.
-// Não é o jogo ainda: serve para conferir, a olho, que cada peça funciona.
-// O que você deve ver:
-//   - 4 quadrados nos cantos, cada um de uma cor (testa o ortho e o tint)
-//   - um sprite no centro girando anti-horário (testa dt e a matriz de modelo)
-//   - um sprite seguindo o mouse, semitransparente (testa pixel -> mundo e alpha)
-//   - um marcador amarelo que aparece onde você clica e some em ~0,6 s
-//   - a letra F sempre "em pé" e o ponto vermelho no canto superior esquerdo
-//     (se estiver de cabeça para baixo, a textura está invertida)
-// Na Fase 3 este arquivo passa a montar o jogo de verdade.
+// Cena estática do jogo: mar, ilha, farol (com o feixe de luz girando) e o
+// barco de patrulha seguindo o mouse. Ainda não há inimigos, ataque nem HUD
+// "de verdade" — isso é a Fase 3, construída em cima do que está aqui.
 
 const canvas = document.querySelector('#tela-webgl')
 const hud = document.querySelector('#hud')
 
-const VELOCIDADE_GIRO = Math.PI / 2 // radianos por segundo (90°/s)
-const DURACAO_MARCADOR = 0.6        // segundos
-const TAMANHO_CANTO = 96
-
-// Arrays criados uma única vez; o desenho só lê (ou altera no lugar) e nunca aloca
 const UV_IMAGEM_INTEIRA = new Float32Array([0, 0, 1, 1])
-const CANTOS = [
-  { x: -1, y: 1, cor: new Float32Array([1.0, 0.35, 0.35, 1]) }, // superior esquerdo
-  { x: 1, y: 1, cor: new Float32Array([0.35, 1.0, 0.35, 1]) },  // superior direito
-  { x: -1, y: -1, cor: new Float32Array([0.4, 0.6, 1.0, 1]) },  // inferior esquerdo
-  { x: 1, y: -1, cor: new Float32Array([1.0, 0.9, 0.3, 1]) }    // inferior direito
-].map((canto) => ({
-  // posição do centro do quadrado, encostado no canto do mundo
-  x: canto.x * (LARGURA_MUNDO / 2 - TAMANHO_CANTO / 2),
-  y: canto.y * (ALTURA_MUNDO / 2 - TAMANHO_CANTO / 2),
-  cor: canto.cor
-}))
-const COR_SEGUIDOR = new Float32Array([1, 1, 1, 0.8])
-const COR_MARCADOR = new Float32Array([1, 0.9, 0.2, 1])
+
+// Todas as posições/tamanhos "de mundo" (unidades do jogo, não pixels de tela)
+// ficam juntos aqui, fáceis de ajustar ao trocar os placeholders pela arte final.
+const POSICAO_ILHA = { x: 0, y: -20 }
+const TAMANHO_ILHA = { largura: 360, altura: 240 }
+
+// O farol LÓGICO fica em (0,0) (ver farol.js), mas visualmente ele fica de pé
+// sobre a ilha — por isso o desenho é deslocado para cima do centro do mundo.
+const POSICAO_FAROL_VISUAL = { x: 0, y: 60 }
+const TAMANHO_FAROL = { largura: 120, altura: 220 }
+
+const TAMANHO_FEIXE = { largura: 90, altura: 640 }
+// Sutil de dia (mais decorativo que funcional); a versão noturna, mais forte
+// e talvez com mistura aditiva, é da Fase 6 — sem mudar nada além destes números.
+const COR_FEIXE = new Float32Array([1, 0.97, 0.82, 0.22])
+
+const TAMANHO_BARCO = { largura: 64, altura: 64 }
 
 function mostrarErro(mensagem) {
   hud.classList.add('erro')
@@ -55,45 +49,40 @@ async function main() {
   const gl = criarContexto(canvas)
   observarTamanho(gl)
 
-  // baixa os shaders (.glsl) e a imagem antes de começar o loop
   const programa = await carregarPrograma(gl, 'shaders/sprite.vert.glsl', 'shaders/sprite.frag.glsl')
-  const texturaTeste = await carregarTextura(gl, 'assets/images/teste.png')
+
+  // baixa as 5 texturas em paralelo, não uma de cada vez
+  const [mar, ilha, farolTex, feixe, barcoTex] = await Promise.all([
+    carregarTextura(gl, 'assets/images/mar.png', { mipmap: true }), // cobre o mundo todo: reduzir bem, então mipmap ajuda
+    carregarTextura(gl, 'assets/images/ilha.png'),
+    carregarTextura(gl, 'assets/images/farol.png'),
+    carregarTextura(gl, 'assets/images/feixe.png'),
+    carregarTextura(gl, 'assets/images/barco.png')
+  ])
 
   const renderizador = new RenderizadorSprites(gl, programa)
   const entrada = criarEntrada(canvas)
   const projecao = criarProjecao()
   const painel = criarPainelDebug()
 
-  gl.clearColor(0.09, 0.36, 0.52, 1) // azul-mar
+  gl.clearColor(0.09, 0.36, 0.52, 1) // azul-mar (mesma cor do mar.png, para não "piscar" nas bordas)
 
-  // estado da cena (a função de desenho só LÊ isto)
-  const estado = {
-    angulo: 0,
-    marcador: { x: 0, y: 0, restante: 0 }
-  }
+  const farol = criarFarol()
+  const barco = criarBarco()
 
-  // medição de fps para o painel de debug
+  // medição de fps para o painel de debug (útil até a Fase 3 ter HUD de verdade)
   let quadros = 0
   let tempoAcumulado = 0
 
   function atualizar(dt) {
-    estado.angulo += VELOCIDADE_GIRO * dt
+    atualizarFarol(farol, dt)
+    atualizarBarco(barco, entrada.mouse, dt)
 
-    for (const clique of entrada.cliques) {
-      estado.marcador.x = clique.x
-      estado.marcador.y = clique.y
-      estado.marcador.restante = DURACAO_MARCADOR
-    }
-    entrada.limparCliques()
-    estado.marcador.restante = Math.max(0, estado.marcador.restante - dt)
-
-    // atualiza o texto do painel ~4 vezes por segundo (mexer no DOM todo quadro é caro)
     quadros++
     tempoAcumulado += dt
     if (tempoAcumulado >= 0.25) {
       const fps = Math.round(quadros / tempoAcumulado)
-      const { x, y } = entrada.mouse
-      painel.textContent = `${fps} fps · mouse no mundo: (${Math.round(x)}, ${Math.round(y)})`
+      painel.textContent = `${fps} fps · vida do farol: ${farol.vida}/${farol.vidaMax}`
       quadros = 0
       tempoAcumulado = 0
     }
@@ -103,33 +92,20 @@ async function main() {
     gl.clear(gl.COLOR_BUFFER_BIT)
     renderizador.iniciarQuadro(projecao)
 
-    // ordem de desenho = ordem de profundidade (algoritmo do pintor, aula 5):
-    // o que é desenhado por último fica na frente
+    // ordem = profundidade (algoritmo do pintor, aula 5): cada um cobre o anterior
+    renderizador.desenhar(mar, 0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
+    renderizador.desenhar(ilha, POSICAO_ILHA.x, POSICAO_ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura)
+    renderizador.desenhar(farolTex, POSICAO_FAROL_VISUAL.x, POSICAO_FAROL_VISUAL.y, TAMANHO_FAROL.largura, TAMANHO_FAROL.altura)
 
-    // 1) quadrados coloridos nos cantos do mundo
-    for (const canto of CANTOS) {
-      renderizador.desenharRegiao(
-        texturaTeste, canto.x, canto.y, TAMANHO_CANTO, TAMANHO_CANTO, 0, UV_IMAGEM_INTEIRA, canto.cor
-      )
-    }
+    // o feixe gira em torno da lâmpada do farol: por isso o pivô de rotação
+    // (o centro do sprite) fica exatamente sobre FAROL_LAMPADA, e a imagem
+    // feixe.png só desenha o cone na metade de CIMA de si mesma
+    renderizador.desenharRegiao(
+      feixe, FAROL_LAMPADA.x, FAROL_LAMPADA.y, TAMANHO_FEIXE.largura, TAMANHO_FEIXE.altura,
+      farol.anguloLuz, UV_IMAGEM_INTEIRA, COR_FEIXE
+    )
 
-    // 2) sprite central girando
-    renderizador.desenhar(texturaTeste, 0, 0, 192, 192, estado.angulo)
-
-    // 3) sprite que segue o mouse
-    if (entrada.mouse.dentro) {
-      renderizador.desenharRegiao(
-        texturaTeste, entrada.mouse.x, entrada.mouse.y, 96, 96, 0, UV_IMAGEM_INTEIRA, COR_SEGUIDOR
-      )
-    }
-
-    // 4) marcador do último clique, sumindo aos poucos
-    if (estado.marcador.restante > 0) {
-      COR_MARCADOR[3] = estado.marcador.restante / DURACAO_MARCADOR
-      renderizador.desenharRegiao(
-        texturaTeste, estado.marcador.x, estado.marcador.y, 48, 48, 0, UV_IMAGEM_INTEIRA, COR_MARCADOR
-      )
-    }
+    renderizador.desenhar(barcoTex, barco.x, barco.y, TAMANHO_BARCO.largura, TAMANHO_BARCO.altura)
   }
 
   iniciarLoop(atualizar, desenhar)
