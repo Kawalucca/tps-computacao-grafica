@@ -53,6 +53,8 @@ body {
   line-height: 1.5;
 }
 
+/* --- Fase 1 --- */
+
 /* duplo clique / arrastar no jogo não deve selecionar texto da página */
 #jogo {
   user-select: none;
@@ -63,11 +65,55 @@ body {
   white-space: pre-wrap;
 }
 
-/* painel de depuração (fps e posição do mouse); remover na Fase 3 */
+/* painel de debug (fps e tamanho das pools) — desligado via MOSTRAR_DEBUG antes da entrega */
 #hud .debug {
   position: absolute;
-  top: 0.5rem;
+  bottom: 0.5rem;
   left: 0.75rem;
   font: 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  opacity: 0.85;
+}
+
+/* --- Fase 3: HUD e tela de fim de jogo --- */
+
+#hud .hud-vida,
+#hud .hud-pontuacao {
+  position: absolute;
+  top: 0.75rem;
+  font: 700 20px/1.3 system-ui, sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+#hud .hud-vida { left: 1rem; }
+#hud .hud-pontuacao { right: 1rem; }
+
+/* Alternada entre display:none e display:flex via JS (nunca window.alert). */
+#hud .tela-game-over {
+  position: absolute;
+  inset: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(4, 12, 18, 0.82);
+  text-align: center;
+  /* diferente do resto do #hud (pointer-events: none): esta tela PRECISA
+     capturar o clique do botão de reiniciar */
+  pointer-events: auto;
+}
+#hud .tela-game-over h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+#hud .tela-game-over button {
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--texto);
+  color: var(--fundo-pagina);
+  cursor: pointer;
+}
+#hud .tela-game-over button:hover {
   opacity: 0.85;
 }

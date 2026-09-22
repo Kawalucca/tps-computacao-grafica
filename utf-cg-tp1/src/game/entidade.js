@@ -37,3 +37,39 @@ export function estaoColidindo(a, b) {
   const raioSoma = a.raio + b.raio
   return distanciaQuadrado(a, b) <= raioSoma * raioSoma
 }
+
+/** O ponto (x, y) está dentro do raio da entidade? Usado na "dedada" (clique do jogador). */
+export function contemPonto(entidade, x, y) {
+  const dx = entidade.x - x
+  const dy = entidade.y - y
+  return dx * dx + dy * dy <= entidade.raio * entidade.raio
+}
+
+/**
+ * Empurra `entidade` para fora de `obstaculo` (círculo sólido, ex.: a ilha)
+ * se estiverem colidindo, deixando-a "encostada" na borda.
+ *
+ * Diferente de causarDano/estaoColidindo: aqui a colisão BLOQUEIA o
+ * movimento em vez de causar dano. Chamado depois de mover a entidade
+ * (ex.: depois de atualizarBarco), então o efeito é o barco "deslizar"
+ * ao redor do obstáculo em vez de atravessá-lo.
+ */
+export function afastarDeObstaculo(entidade, obstaculo) {
+  const dx = entidade.x - obstaculo.x
+  const dy = entidade.y - obstaculo.y
+  const distanciaMinima = entidade.raio + obstaculo.raio
+  const distanciaAtual = Math.hypot(dx, dy)
+
+  if (distanciaAtual >= distanciaMinima) return // não está colidindo: nada a fazer
+
+  if (distanciaAtual === 0) {
+    // caso raríssimo (exatamente no mesmo ponto): empurra numa direção
+    // qualquer, só para não dividir por zero
+    entidade.y = obstaculo.y + distanciaMinima
+    return
+  }
+
+  const fator = distanciaMinima / distanciaAtual
+  entidade.x = obstaculo.x + dx * fator
+  entidade.y = obstaculo.y + dy * fator
+}
