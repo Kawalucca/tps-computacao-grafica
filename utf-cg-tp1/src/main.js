@@ -5,7 +5,6 @@ import { carregarTextura } from './engine/textura.js'
 import { RenderizadorSprites } from './engine/renderizador-sprites.js'
 import { criarEntrada } from './engine/entrada.js'
 import { criarPool, adicionar, removerMortos, paraCadaAtivo, buscarAtivo } from './engine/pool.js'
-import { destravarAudio, carregarSom, tocarEfeito, iniciarMusicaFundo } from './engine/audio.js'
 import { estaViva, afastarDeObstaculo, causarDano, contemPonto } from './game/entidade.js'
 import { criarFarol, atualizarFarol, FAROL_LAMPADA } from './game/farol.js'
 import { criarBarco, atualizarBarco } from './game/barco.js'
@@ -13,11 +12,13 @@ import { ILHA } from './game/ilha.js'
 import { criarInimigo, atualizarInimigo } from './game/inimigo.js'
 import { atualizarProjetil, verificarImpacto } from './game/projetil.js'
 import { criarAtirador, atualizarAtirador } from './game/ataque.js'
-import { ONDAS, criarGerenciadorOndas, atualizarOndas } from './game/ondas.js'
+import { calcularIntervaloSpawn } from './game/dificuldade.js'
 
-// MVP (Fase 3) + waves de verdade (1-3, só piratas), tipos de inimigo
-// diferentes, textura animada e som (Fase 4). O Holandês Voador entra na
-// Fase 5, no gancho que ondas.js deixa pronto (estado 'concluido').
+// MVP completo: cenário + inimigos + farol/barco atirando (commits
+// anteriores) + dedada, pontuação, HUD, game over/reinício e dificuldade
+// crescente (este commit). É o jogo com todos os obrigatórios do enunciado.
+// Waves de verdade, tipos de inimigo, sons e telas de menu ficam para as
+// próximas fases, construídas em cima do que está aqui.
 
 const canvas = document.querySelector('#tela-webgl')
 const hud = document.querySelector('#hud')
@@ -41,19 +42,10 @@ const TAMANHO_BARCO = { largura: 64, altura: 64 }
 // ---- inimigos e projéteis ----
 const CAPACIDADE_INIMIGOS = 60
 const CAPACIDADE_PROJETEIS = 80
-const TAMANHO_INIMIGO_BASE = 56 // multiplicado pela `escala` de cada tipo (inimigo.js)
+const TAMANHO_INIMIGO = 56
 const TAMANHO_PROJETIL = 18
 const COR_PROJETIL_FAROL = new Float32Array([0.65, 0.85, 1, 1]) // azul clarinho
 const COR_PROJETIL_BARCO = new Float32Array([1, 0.85, 0.3, 1]) // amarelo
-
-// animação dos inimigos: inimigo.png é um sprite sheet de 2 quadros lado a
-// lado (mesmo mecanismo de u_uv usado nas coordenadas de textura, aula 7)
-const QUADROS_ANIMACAO_INIMIGO = 2
-const DURACAO_QUADRO_INIMIGO = 0.25 // segundos por quadro
-const UV_QUADROS_INIMIGO = [
-  new Float32Array([0, 0, 0.5, 1]),
-  new Float32Array([0.5, 0, 0.5, 1])
-]
 
 // ---- regras de jogo ----
 const DANO_DEDADA = 15
@@ -71,7 +63,7 @@ function criarPainelDebug() {
   return painel
 }
 
-/** HUD "de verdade": vida do farol, pontuação e a wave atual. */
+/** HUD "de verdade": vida do farol e pontuação, sempre visíveis. */
 function criarHud() {
   const vidaEl = document.createElement('div')
   vidaEl.className = 'hud-vida'
@@ -79,23 +71,10 @@ function criarHud() {
   const pontuacaoEl = document.createElement('div')
   pontuacaoEl.className = 'hud-pontuacao'
 
-  const ondaEl = document.createElement('div')
-  ondaEl.className = 'hud-onda'
-
   hud.append(vidaEl)
   hud.append(pontuacaoEl)
-  hud.append(ondaEl)
 
-  return { vidaEl, pontuacaoEl, ondaEl }
-}
-
-/** Texto amigável para o estado do gerenciador de ondas, mostrado no HUD. */
-function textoDaOnda(ondas) {
-  if (ondas.estado === 'concluido') {
-    return 'Todas as ondas derrotadas!' // até a Fase 5 conectar o próximo desafio
-  }
-  const numeroOnda = Math.min(ondas.indiceOnda + 1, ONDAS.length)
-  return `Onda ${numeroOnda} de ${ONDAS.length}`
+  return { vidaEl, pontuacaoEl }
 }
 
 /**
@@ -134,8 +113,8 @@ function criarTelaGameOver(aoReiniciar) {
 
 /**
  * Todo o estado que muda durante uma partida, num único objeto — para
- * reiniciar o jogo ser só "trocar esse objeto por um novo", sem esquecer
- * nenhum pedaço de estado solto.
+ * reiniciar o jogo ser só "trocar esse objeto por um novo" (função
+ * `reiniciar` dentro de `main`), sem esquecer nenhum pedaço de estado solto.
  */
 function criarEstadoJogo() {
   return {
@@ -143,10 +122,11 @@ function criarEstadoJogo() {
     barco: criarBarco(),
     inimigos: criarPool(CAPACIDADE_INIMIGOS),
     projeteis: criarPool(CAPACIDADE_PROJETEIS),
-    ondas: criarGerenciadorOndas(),
     atiradorFarol: criarAtirador({ alcance: 260, cadencia: 0.8, dano: 12, velocidadeProjetil: 500, cor: COR_PROJETIL_FAROL }),
     atiradorBarco: criarAtirador({ alcance: 140, cadencia: 0.5, dano: 8, velocidadeProjetil: 600, cor: COR_PROJETIL_BARCO }),
     pontuacao: 0,
+    tempoDecorrido: 0, // usado pela dificuldade crescente (calcularIntervaloSpawn)
+    cronometroSpawn: 0,
     pausado: false // true = fim de jogo: atualizar() para de simular, mas o desenho continua (última cena "congelada")
   }
 }
@@ -157,17 +137,14 @@ async function main() {
 
   const programa = await carregarPrograma(gl, 'shaders/sprite.vert.glsl', 'shaders/sprite.frag.glsl')
 
-  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
+  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoTex, projetilTex] = await Promise.all([
     carregarTextura(gl, 'assets/images/mar.png', { mipmap: true }),
     carregarTextura(gl, 'assets/images/ilha.png'),
     carregarTextura(gl, 'assets/images/farol.png'),
     carregarTextura(gl, 'assets/images/feixe.png'),
     carregarTextura(gl, 'assets/images/barco.png'),
     carregarTextura(gl, 'assets/images/inimigo.png'),
-    carregarTextura(gl, 'assets/images/projetil.png'),
-    carregarSom('assets/sounds/tiro.wav'),
-    carregarSom('assets/sounds/impacto.wav'),
-    carregarSom('assets/sounds/morte.wav')
+    carregarTextura(gl, 'assets/images/projetil.png')
   ])
 
   const renderizador = new RenderizadorSprites(gl, programa)
@@ -177,15 +154,6 @@ async function main() {
   const painelDebug = MOSTRAR_DEBUG ? criarPainelDebug() : null
 
   gl.clearColor(0.09, 0.36, 0.52, 1)
-
-  // som só pode tocar depois da primeira interação do jogador (política do
-  // navegador, não é bug nosso) — destrava no primeiro clique dentro do jogo
-  function destravarAoPrimeiroClique() {
-    destravarAudio()
-    iniciarMusicaFundo()
-    canvas.removeEventListener('pointerdown', destravarAoPrimeiroClique)
-  }
-  canvas.addEventListener('pointerdown', destravarAoPrimeiroClique)
 
   let estado = criarEstadoJogo()
 
@@ -206,44 +174,36 @@ async function main() {
       // dedada: cada clique causa dano ao primeiro inimigo atingido (se houver)
       for (const clique of entrada.cliques) {
         const alvo = buscarAtivo(estado.inimigos, (inimigo) => contemPonto(inimigo, clique.x, clique.y))
-        if (alvo) {
-          causarDano(alvo, DANO_DEDADA)
-          tocarEfeito(somImpacto, { volume: 0.7, variacaoPitch: 0.15 })
-        }
+        if (alvo) causarDano(alvo, DANO_DEDADA)
       }
 
-      // ondas: pergunta ao gerenciador se é hora de nascer alguém
-      const tipoParaNascer = atualizarOndas(estado.ondas, estado.inimigos.quantidade, dt)
-      if (tipoParaNascer) adicionar(estado.inimigos, criarInimigo(tipoParaNascer))
+      // dificuldade crescente: o intervalo até o próximo spawn encolhe com o tempo de jogo
+      estado.tempoDecorrido += dt
+      estado.cronometroSpawn -= dt
+      if (estado.cronometroSpawn <= 0) {
+        adicionar(estado.inimigos, criarInimigo())
+        estado.cronometroSpawn = calcularIntervaloSpawn(estado.tempoDecorrido)
+      }
 
       // inimigos: andam até o farol e, encostados, causam dano contínuo nele
       paraCadaAtivo(estado.inimigos, (inimigo) => atualizarInimigo(inimigo, estado.farol, dt))
 
       // farol e barco: cada um mira e atira sozinho no inimigo mais próximo
-      if (atualizarAtirador(estado.atiradorFarol, estado.farol, estado.inimigos, estado.projeteis, dt)) {
-        tocarEfeito(somTiro, { volume: 0.5, variacaoPitch: 0.08 })
-      }
-      if (atualizarAtirador(estado.atiradorBarco, estado.barco, estado.inimigos, estado.projeteis, dt)) {
-        tocarEfeito(somTiro, { volume: 0.5, variacaoPitch: 0.08 })
-      }
+      atualizarAtirador(estado.atiradorFarol, estado.farol, estado.inimigos, estado.projeteis, dt)
+      atualizarAtirador(estado.atiradorBarco, estado.barco, estado.inimigos, estado.projeteis, dt)
 
       // projéteis: voam e, ao colidir com QUALQUER inimigo vivo (não só o que
       // miravam ao nascer — ele pode ter morrido nesse meio-tempo), causam dano
       paraCadaAtivo(estado.projeteis, (projetil) => {
         atualizarProjetil(projetil, dt)
         paraCadaAtivo(estado.inimigos, (inimigo) => {
-          if (estaViva(projetil) && verificarImpacto(projetil, inimigo)) {
-            tocarEfeito(somImpacto, { volume: 0.4, variacaoPitch: 0.15 })
-          }
+          if (estaViva(projetil)) verificarImpacto(projetil, inimigo)
         })
       })
 
-      // pontuação e som de morte: verificados ANTES de remover quem morreu nesta rodada
+      // pontuação: soma ANTES de remover quem morreu nesta rodada (tiro ou dedada)
       paraCadaAtivo(estado.inimigos, (inimigo) => {
-        if (!estaViva(inimigo)) {
-          estado.pontuacao += PONTOS_POR_INIMIGO
-          tocarEfeito(somMorte, { volume: 0.5, variacaoPitch: 0.1 })
-        }
+        if (!estaViva(inimigo)) estado.pontuacao += PONTOS_POR_INIMIGO
       })
 
       removerMortos(estado.projeteis, estaViva)
@@ -251,7 +211,6 @@ async function main() {
 
       painelHud.vidaEl.textContent = `Vida do farol: ${Math.max(0, Math.ceil(estado.farol.vida))}/${estado.farol.vidaMax}`
       painelHud.pontuacaoEl.textContent = `Pontuação: ${estado.pontuacao}`
-      painelHud.ondaEl.textContent = textoDaOnda(estado.ondas)
 
       if (painelDebug) {
         quadros++
@@ -286,12 +245,7 @@ async function main() {
     renderizador.desenhar(ilhaTex, ILHA.x, ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura)
 
     paraCadaAtivo(estado.inimigos, (inimigo) => {
-      const quadro = Math.floor(inimigo.tempoAnimacao / DURACAO_QUADRO_INIMIGO) % QUADROS_ANIMACAO_INIMIGO
-      const tamanho = TAMANHO_INIMIGO_BASE * inimigo.escala
-      renderizador.desenharRegiao(
-        inimigoTex, inimigo.x, inimigo.y, tamanho, tamanho,
-        0, UV_QUADROS_INIMIGO[quadro], inimigo.cor
-      )
+      renderizador.desenhar(inimigoTex, inimigo.x, inimigo.y, TAMANHO_INIMIGO, TAMANHO_INIMIGO)
     })
 
     function desenharFarolEFeixe() {
