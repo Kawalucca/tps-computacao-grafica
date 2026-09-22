@@ -1,1 +1,0 @@
-commit inicial: criar o repositório compartilhado
