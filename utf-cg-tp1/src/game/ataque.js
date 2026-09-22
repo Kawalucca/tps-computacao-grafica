@@ -32,21 +32,26 @@ function inimigoMaisProximo(origem, alcance, inimigos) {
  * Chame uma vez por quadro para cada atirador (farol, barco). Conta o tempo
  * até o próximo tiro; quando chega a zero E há um inimigo no alcance, cria
  * um projétil (na pool `projeteis`) e reinicia o cronômetro.
+ *
+ * Devolve o projétil criado, ou `null` se não atirou neste quadro — útil
+ * para quem chamou saber quando tocar o som de tiro, por exemplo.
  */
 export function atualizarAtirador(atirador, origem, inimigos, projeteis, dt) {
   atirador.cronometro -= dt
-  if (atirador.cronometro > 0) return
+  if (atirador.cronometro > 0) return null
 
   const alvo = inimigoMaisProximo(origem, atirador.alcance, inimigos)
-  if (!alvo) return // esperando um alvo aparecer: não reinicia o cronômetro, atira assim que puder
+  if (!alvo) return null // esperando um alvo aparecer: não reinicia o cronômetro, atira assim que puder
 
-  adicionar(projeteis, criarProjetil({
+  const projetil = criarProjetil({
     x: origem.x,
     y: origem.y,
     alvo,
     dano: atirador.dano,
     velocidade: atirador.velocidadeProjetil,
     cor: atirador.cor
-  }))
+  })
+  adicionar(projeteis, projetil)
   atirador.cronometro = atirador.cadencia
+  return projetil
 }
