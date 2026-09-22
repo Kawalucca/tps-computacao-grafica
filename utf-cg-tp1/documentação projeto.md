@@ -1,9 +1,14 @@
-# Tower Defense Naval
+# The Last Beacon: Tower Defense Naval
 
 Trabalho Prático 1 de Computação Gráfica (WebGL 2) — CEFET-MG.
 
-<!-- Antes da entrega: preencher os links, os contatos, o media kit e os créditos,
+<!-- Antes da entrega NÃO ESQUECER: preencher os links, os contatos, o media kit e os créditos,
      marcar [x] nos opcionais implementados e REMOVER os que ficaram de fora. -->
+
+## Sobre o desenvolvimento
+Professor, você com certeza irá perceber a concentração absurda de commits feitas no dia de hoje (21/09) kkkkkkkkkkkkk
+Basicamente eu e o Kakaw focamos em fazer todo o MVP (com os requisitos obrigatórios) do jogo antes de dar o primeiro commit oficial -- facilitou MUITO nossa organização e mamanteve o projeto limpo.
+Hoje, depois de uma viagem que ele fez no final de semana, nos reunimos pra organizar TODOS os commits e subir pro repositório TUDO que fizemos até agora, mas em partes estratégicas -- o objetivo foi contar a história de evolução que tivemos seguindo o planejamento de 7 fases que elaboramos e estamos seguindo :D
 
 ## O Jogo
 
@@ -13,11 +18,12 @@ o jogador comanda um barco de patrulha com o mouse e enfrenta dois chefes:
 o Holandês Voador e o Kraken.
 
 **Jogar:** https://SEU-USUARIO.github.io/REPOSITORIO/
+<!-- Lembrar de avisar o Kakaw que ele tem que alterar esse campo após criarmos o link final no GitHub Pages-->
 
 **Controles**
 
-- Mover o mouse: o barco de patrulha segue o cursor e ataca sozinho os inimigos próximos.
-- Clicar em um inimigo: causa dano a ele.
+- Mover o mouse: o barco de patrulha segue o cursor e ataca automaticamente os inimigos próximos.
+- Clicar em um inimigo: causa dano adicional a ele.
 
 **Rodar localmente**
 
@@ -29,21 +35,22 @@ python -m http.server 8000
 ```
 
 e abrir http://localhost:8000 (ou usar a extensão *Live Server* do VS Code).
+O GitHub Pages faz isso de forma automática e "hospeda" nosso game (tela única) nos servidores deles.
 
 ## Criador(es)
 
-- Hugo Daniel Amaral Oliveira — [contato: e-mail ou LinkedIn]
-- Kawã Lucca Marques — [contato: e-mail ou LinkedIn]
+- Hugo Daniel Amaral Oliveira — [e-mail: college.hugodaniel@gmail.com]
+- Kawã Lucca Marques Souza — []
 
 ## Media kit
 
 <!-- 1 a 3 screenshots em assets/media/, por exemplo:
 ![Tela de jogo](assets/media/screenshot-1.png)
+
+apenas pós finalização de TUDO
 -->
 
 ## Opcionais
-
-<!-- Texto dos itens copiado do enunciado, como pedido. -->
 
 ### Relativas à apresentação do jogo e gráficos
 
@@ -72,6 +79,8 @@ e abrir http://localhost:8000 (ou usar a extensão *Live Server* do VS Code).
   - *No jogo:* dois confrontos de chefe com mecânicas diferentes: o Holandês Voador (wave 3) e o Kraken (wave 6).
 
 ## Créditos
+
+<!-- dificlmente vamos deixar essa parte em branco -- principalmente na parte da estilização final -->
 
 | Recurso | Autor | Link | Licença |
 |---|---|---|---|
