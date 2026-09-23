@@ -16,7 +16,7 @@ import { criarAtirador, atualizarAtirador } from './game/ataque.js'
 import { ONDAS, criarGerenciadorOndas, atualizarOndas } from './game/ondas.js'
 
 // MVP (Fase 3) + waves de verdade (1-3, só piratas), tipos de inimigo
-// diferentes, textura animada e som (Fase 4). O Holandês Voador entra na
+// diferentes, texturas próprias e som (Fase 4). O Holandês Voador entra na
 // Fase 5, no gancho que ondas.js deixa pronto (estado 'concluido').
 
 const canvas = document.querySelector('#tela-webgl')
@@ -46,15 +46,6 @@ const TAMANHO_PROJETIL = 18
 const COR_PROJETIL_FAROL = new Float32Array([0.65, 0.85, 1, 1]) // azul clarinho
 const COR_PROJETIL_BARCO = new Float32Array([1, 0.85, 0.3, 1]) // amarelo
 const COR_FLASH_INIMIGO = new Float32Array([1, 1, 1, 1]) // "pisca" de branco ao tomar dano
-
-// animação dos inimigos: inimigo.png é um sprite sheet de 2 quadros lado a
-// lado (mesmo mecanismo de u_uv usado nas coordenadas de textura, aula 7)
-const QUADROS_ANIMACAO_INIMIGO = 2
-const DURACAO_QUADRO_INIMIGO = 0.25 // segundos por quadro
-const UV_QUADROS_INIMIGO = [
-  new Float32Array([0, 0, 0.5, 1]),
-  new Float32Array([0.5, 0, 0.5, 1])
-]
 
 // ---- regras de jogo ----
 const DANO_DEDADA = 15
@@ -158,18 +149,26 @@ async function main() {
 
   const programa = await carregarPrograma(gl, 'shaders/sprite.vert.glsl', 'shaders/sprite.frag.glsl')
 
-  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
-    carregarTextura(gl, 'assets/images/mar.png', { mipmap: true }),
+  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoBatedorTex, inimigoPadraoTex, inimigoBrutamontesTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
+    carregarTextura(gl, 'assets/images/mar.jpg', { mipmap: true }),
     carregarTextura(gl, 'assets/images/ilha.png'),
     carregarTextura(gl, 'assets/images/farol.png'),
     carregarTextura(gl, 'assets/images/feixe.png'),
     carregarTextura(gl, 'assets/images/barco.png'),
-    carregarTextura(gl, 'assets/images/inimigo.png'),
+    carregarTextura(gl, 'assets/images/inimigo-batedor.png'),
+    carregarTextura(gl, 'assets/images/inimigo-padrao.png'),
+    carregarTextura(gl, 'assets/images/inimigo-brutamontes.png'),
     carregarTextura(gl, 'assets/images/projetil.png'),
     carregarSom('assets/sounds/tiro.wav'),
     carregarSom('assets/sounds/impacto.wav'),
     carregarSom('assets/sounds/morte.wav')
   ])
+
+  const texturasInimigos = {
+    batedor: inimigoBatedorTex,
+    padrao: inimigoPadraoTex,
+    brutamontes: inimigoBrutamontesTex
+  }
 
   const renderizador = new RenderizadorSprites(gl, programa)
   const entrada = criarEntrada(canvas)
@@ -289,12 +288,16 @@ async function main() {
     renderizador.desenhar(ilhaTex, ILHA.x, ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura)
 
     paraCadaAtivo(estado.inimigos, (inimigo) => {
-      const quadro = Math.floor(inimigo.tempoAnimacao / DURACAO_QUADRO_INIMIGO) % QUADROS_ANIMACAO_INIMIGO
       const tamanho = TAMANHO_INIMIGO_BASE * inimigo.escala
+      const textura = texturasInimigos[inimigo.tipoId]
+      const proporcao = textura.largura / textura.altura
+      const larguraBase = proporcao >= 1 ? tamanho : tamanho * proporcao
+      const altura = proporcao >= 1 ? tamanho / proporcao : tamanho
+      const largura = inimigo.x > estado.farol.x ? -larguraBase : larguraBase
       const cor = inimigo.flashRestante > 0 ? COR_FLASH_INIMIGO : inimigo.cor
       renderizador.desenharRegiao(
-        inimigoTex, inimigo.x, inimigo.y, tamanho, tamanho,
-        0, UV_QUADROS_INIMIGO[quadro], cor
+        textura, inimigo.x, inimigo.y, largura, altura,
+        0, UV_IMAGEM_INTEIRA, cor
       )
     })
 
