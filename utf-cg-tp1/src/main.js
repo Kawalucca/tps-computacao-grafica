@@ -150,7 +150,7 @@ async function main() {
   const programa = await carregarPrograma(gl, 'shaders/sprite.vert.glsl', 'shaders/sprite.frag.glsl')
 
   const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoBatedorTex, inimigoPadraoTex, inimigoBrutamontesTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
-    carregarTextura(gl, 'assets/images/mar.png', { mipmap: true }),
+    carregarTextura(gl, 'assets/images/mar.jpg', { mipmap: true }),
     carregarTextura(gl, 'assets/images/ilha.png'),
     carregarTextura(gl, 'assets/images/farol.png'),
     carregarTextura(gl, 'assets/images/feixe.png'),
@@ -291,21 +291,13 @@ async function main() {
       const tamanho = TAMANHO_INIMIGO_BASE * inimigo.escala
       const textura = texturasInimigos[inimigo.tipoId]
       const proporcao = textura.largura / textura.altura
-      let largura = proporcao >= 1 ? tamanho : tamanho * proporcao
+      const larguraBase = proporcao >= 1 ? tamanho : tamanho * proporcao
       const altura = proporcao >= 1 ? tamanho / proporcao : tamanho
-      const direcaoDoFarol = Math.atan2(estado.farol.y - inimigo.y, estado.farol.x - inimigo.x)
-      let rotacao = direcaoDoFarol + Math.PI / 6
-      if (rotacao > Math.PI / 2) {
-        rotacao -= Math.PI
-        largura = -largura
-      } else if (rotacao < -Math.PI / 2) {
-        rotacao += Math.PI
-        largura = -largura
-      }
+      const largura = inimigo.x > estado.farol.x ? -larguraBase : larguraBase
       const cor = inimigo.flashRestante > 0 ? COR_FLASH_INIMIGO : inimigo.cor
       renderizador.desenharRegiao(
         textura, inimigo.x, inimigo.y, largura, altura,
-        rotacao, UV_IMAGEM_INTEIRA, cor
+        0, UV_IMAGEM_INTEIRA, cor
       )
     })
 

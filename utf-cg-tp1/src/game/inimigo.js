@@ -7,7 +7,7 @@ export const TIPOS_INIMIGO = {
   // rápido e frágil: pressiona o jogador a reagir rápido, mas morre fácil
   batedor: {
     vida: 14, velocidade: 100, danoContato: 8,
-    raioBase: 16, escala: 0.75,
+    raioBase: 16, escala: 1,
     cor: new Float32Array([1, 1, 1, 1])
   },
   // o "meio-termo": era o único tipo que existia até a Fase 3
