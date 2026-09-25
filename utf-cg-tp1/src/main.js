@@ -37,6 +37,9 @@ const TAMANHO_FAROL = { largura: 120, altura: 220 }
 const FAROL_BASE_Y = POSICAO_FAROL_VISUAL.y - TAMANHO_FAROL.altura / 2 // ver comentário em desenhar()
 const TAMANHO_FEIXE = { largura: 90, altura: 640 }
 const COR_FEIXE = new Float32Array([1, 0.97, 0.82, 0.22]) // sutil de dia; mais forte à noite (Fase 6)
+const COR_MAR_NOITE = new Float32Array([0.22, 0.3, 0.55, 1])
+const COR_ILHA_NOITE = new Float32Array([0.42, 0.48, 0.68, 1])
+const COR_FEIXE_NOITE = new Float32Array([0.6, 0.85, 1, 0.4])
 const TAMANHO_BARCO = { largura: 64, altura: 64 }
 
 // ---- inimigos e projéteis ----
@@ -48,6 +51,7 @@ const COR_PROJETIL_FAROL = new Float32Array([0.65, 0.85, 1, 1]) // azul clarinho
 const COR_PROJETIL_BARCO = new Float32Array([1, 0.85, 0.3, 1]) // amarelo
 const COR_CAMINHO_BOSS = new Float32Array([1, 0.08, 0.08, 0.9])
 const COR_BARCO_STUN = new Float32Array([0.25, 0.65, 1, 1])
+const COR_BRILHO_BOSS = new Float32Array([0.3, 0.8, 1, 0.42])
 const COR_FLASH_INIMIGO = new Float32Array([1, 1, 1, 1]) // "pisca" de branco ao tomar dano
 
 // ---- regras de jogo ----
@@ -117,12 +121,45 @@ function criarTelaGameOver(aoReiniciar) {
   hud.append(tela)
 
   return {
-    mostrar(pontuacao) {
-      pontuacaoFinalEl.textContent = `Pontuação final: ${pontuacao}`
+    mostrar(pontuacao, venceu = false) {
+      titulo.textContent = venceu ? 'Vitória!' : 'Fim de jogo'
+      pontuacaoFinalEl.textContent = venceu
+        ? `O Holandês Voador foi derrotado! Pontuação final: ${pontuacao}`
+        : `Pontuação final: ${pontuacao}`
       tela.style.display = 'flex'
     },
     esconder() {
       tela.style.display = 'none'
+    },
+    mostrar() {
+      tela.style.display = 'flex'
+    }
+  }
+}
+
+function criarTelaInicial(aoIniciar) {
+  const tela = document.createElement('div')
+  tela.className = 'tela-inicial'
+
+  const titulo = document.createElement('h1')
+  titulo.textContent = 'The Last Beacon'
+
+  const botao = document.createElement('button')
+  botao.textContent = 'Iniciar'
+  botao.addEventListener('click', () => {
+    tela.style.display = 'none'
+    aoIniciar()
+  })
+
+  tela.append(titulo, botao)
+  hud.append(tela)
+
+  return {
+    esconder() {
+      tela.style.display = 'none'
+    },
+    mostrar() {
+      tela.style.display = 'flex'
     }
   }
 }
@@ -141,9 +178,9 @@ function criarEstadoJogo() {
     ondas: criarGerenciadorOndas(),
     bossCriado: false,
     atiradorFarol: criarAtirador({ alcance: 260, cadencia: 0.8, dano: 12, velocidadeProjetil: 500, cor: COR_PROJETIL_FAROL }),
-    atiradorBarco: criarAtirador({ alcance: 140, cadencia: 0.5, dano: 8, velocidadeProjetil: 600, cor: COR_PROJETIL_BARCO }),
+    atiradorBarco: criarAtirador({ alcance: 160, cadencia: 0.5, dano: 8, velocidadeProjetil: 600, cor: COR_PROJETIL_BARCO }),
     pontuacao: 0,
-    pausado: false // true = fim de jogo: atualizar() para de simular, mas o desenho continua (última cena "congelada")
+    pausado: true // começa no menu; depois também congela no fim de jogo
   }
 }
 
@@ -195,9 +232,17 @@ async function main() {
 
   let estado = criarEstadoJogo()
 
+  let telaInicial
+
   const telaGameOver = criarTelaGameOver(() => {
     estado = criarEstadoJogo()
     telaGameOver.esconder()
+    telaInicial.mostrar()
+  })
+  telaInicial = criarTelaInicial(() => {
+    estado.pausado = false
+    destravarAudio()
+    iniciarMusicaFundo()
   })
 
   let quadros = 0
@@ -264,10 +309,12 @@ async function main() {
       })
 
       // pontuação e som de morte: verificados ANTES de remover quem morreu nesta rodada
+      let bossDerrotado = false
       paraCadaAtivo(estado.inimigos, (inimigo) => {
         if (!estaViva(inimigo)) {
           estado.pontuacao += PONTOS_POR_INIMIGO
           tocarEfeito(somMorte, { volume: 0.5, variacaoPitch: 0.1 })
+          if (inimigo.tipoId === 'boss') bossDerrotado = true
         }
       })
 
@@ -289,7 +336,10 @@ async function main() {
         }
       }
 
-      if (!estaViva(estado.farol)) {
+      if (bossDerrotado) {
+        estado.pausado = true
+        telaGameOver.mostrar(estado.pontuacao, true)
+      } else if (!estaViva(estado.farol)) {
         estado.pausado = true
         telaGameOver.mostrar(estado.pontuacao)
       }
@@ -307,8 +357,15 @@ async function main() {
     // ordem = profundidade (algoritmo do pintor, aula 5). mar e ilha são
     // "chão": sempre no fundo. inimigos ficam numa camada fixa, abaixo do
     // farol/barco — simplificação consciente, suficiente para o TP1.
-    renderizador.desenhar(mar, 0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
-    renderizador.desenhar(ilhaTex, ILHA.x, ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura)
+    const noite = estado.bossCriado
+    renderizador.desenharRegiao(
+      mar, 0, 0, LARGURA_MUNDO, ALTURA_MUNDO,
+      0, UV_IMAGEM_INTEIRA, noite ? COR_MAR_NOITE : COR_BRANCA
+    )
+    renderizador.desenharRegiao(
+      ilhaTex, ILHA.x, ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura,
+      0, UV_IMAGEM_INTEIRA, noite ? COR_ILHA_NOITE : COR_BRANCA
+    )
 
     const boss = buscarAtivo(estado.inimigos, (inimigo) => inimigo.tipoId === 'boss')
     if (boss) {
@@ -334,6 +391,12 @@ async function main() {
       const altura = proporcao >= 1 ? tamanho / proporcao : tamanho
       const largura = inimigo.x > estado.farol.x ? -larguraBase : larguraBase
       const cor = inimigo.flashRestante > 0 ? COR_FLASH_INIMIGO : inimigo.cor
+      if (inimigo.tipoId === 'boss') {
+        renderizador.desenharRegiao(
+          textura, inimigo.x, inimigo.y, largura * 1.45, altura * 1.45,
+          0, UV_IMAGEM_INTEIRA, COR_BRILHO_BOSS
+        )
+      }
       renderizador.desenharRegiao(
         textura, inimigo.x, inimigo.y, largura, altura,
         0, UV_IMAGEM_INTEIRA, cor
@@ -344,7 +407,7 @@ async function main() {
       renderizador.desenhar(farolTex, POSICAO_FAROL_VISUAL.x, POSICAO_FAROL_VISUAL.y, TAMANHO_FAROL.largura, TAMANHO_FAROL.altura)
       renderizador.desenharRegiao(
         feixe, FAROL_LAMPADA.x, FAROL_LAMPADA.y, TAMANHO_FEIXE.largura, TAMANHO_FEIXE.altura,
-        estado.farol.anguloLuz, UV_IMAGEM_INTEIRA, COR_FEIXE
+        estado.farol.anguloLuz, UV_IMAGEM_INTEIRA, noite ? COR_FEIXE_NOITE : COR_FEIXE
       )
     }
     function desenharBarco() {
