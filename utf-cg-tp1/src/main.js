@@ -115,9 +115,14 @@ function criarTelaGameOver(aoReiniciar) {
   botao.textContent = 'Jogar novamente'
   botao.addEventListener('click', aoReiniciar)
 
+  const creditosEl = document.createElement('p')
+  creditosEl.className = 'tela-game-over-creditos'
+  creditosEl.textContent = 'by Kawã Lucca e Hugo Daniel'
+
   tela.append(titulo)
   tela.append(pontuacaoFinalEl)
   tela.append(botao)
+  tela.append(creditosEl)
   hud.append(tela)
 
   return {
@@ -177,7 +182,7 @@ function criarEstadoJogo() {
     projeteis: criarPool(CAPACIDADE_PROJETEIS),
     ondas: criarGerenciadorOndas(),
     bossCriado: false,
-    atiradorFarol: criarAtirador({ alcance: 260, cadencia: 0.8, dano: 12, velocidadeProjetil: 500, cor: COR_PROJETIL_FAROL }),
+    atiradorFarol: criarAtirador({ alcance: 260, cadencia: 1.1, dano: 9, velocidadeProjetil: 500, cor: COR_PROJETIL_FAROL }),
     atiradorBarco: criarAtirador({ alcance: 160, cadencia: 0.5, dano: 8, velocidadeProjetil: 600, cor: COR_PROJETIL_BARCO }),
     pontuacao: 0,
     pausado: true // começa no menu; depois também congela no fim de jogo

@@ -21,8 +21,8 @@ export const ONDAS = [
   [{ tipo: 'batedor', quantidade: 4 }, { tipo: 'padrao', quantidade: 5 }, { tipo: 'brutamontes', quantidade: 3 }]
 ]
 
-const INTERVALO_SPAWN_DENTRO_DA_ONDA = 0.9 // segundos entre um inimigo e o próximo, na mesma wave
-const DESCANSO_ENTRE_ONDAS = 6 // segundos de respiro depois que a arena fica vazia
+const INTERVALO_SPAWN_DENTRO_DA_ONDA = 1.1 // segundos entre um inimigo e o próximo, na mesma wave
+const DESCANSO_ENTRE_ONDAS = 5 // segundos de respiro depois que a arena fica vazia
 
 export function criarGerenciadorOndas() {
   return {
