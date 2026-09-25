@@ -13,17 +13,14 @@ Hoje, depois de uma viagem que ele fez no final de semana, nos reunimos pra orga
 ## O Jogo
 
 Um *Tower Defense* naval. Um farol no centro do mar precisa resistir a ondas de
-piratas e, depois que a noite cai, de monstros marinhos. O farol atira sozinho;
-o jogador comanda um barco de patrulha com o mouse e enfrenta dois chefes:
-o Holandês Voador e o Kraken.
+piratas e, depois que a noite cai, um navio lendario fantasma. O farol atira sozinho;
+o jogador comanda um barco de patrulha com o mouse e enfrenta os inimigos.
 
-**Jogar:** https://SEU-USUARIO.github.io/REPOSITORIO/
-<!-- Lembrar de avisar o Kakaw que ele tem que alterar esse campo após criarmos o link final no GitHub Pages-->
+**Jogar:** https://kawalucca.github.io/tps-computacao-grafica/utf-cg-tp1/
 
 **Controles**
 
 - Mover o mouse: o barco de patrulha segue o cursor e ataca automaticamente os inimigos próximos.
-- Clicar em um inimigo: causa dano adicional a ele.
 
 **Rodar localmente**
 
@@ -40,7 +37,7 @@ O GitHub Pages faz isso de forma automática e "hospeda" nosso game (tela única
 ## Criador(es)
 
 - Hugo Daniel Amaral Oliveira — [e-mail: college.hugodaniel@gmail.com]
-- Kawã Lucca Marques Souza — []
+- Kawã Lucca Marques Souza — [email: kawa_lucca@yahoo.com.br]
 
 ## Media kit
 

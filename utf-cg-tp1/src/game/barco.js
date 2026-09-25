@@ -7,7 +7,10 @@ const SUAVIZACAO = 10
 
 export function criarBarco() {
   // começa perto do farol, como se estivesse ancorado ali no início
-  return criarEntidade({ x: 0, y: -140, raio: BARCO_RAIO, vida: 1 })
+  return {
+    ...criarEntidade({ x: 0, y: -140, raio: BARCO_RAIO, vida: 1 }),
+    stunRestante: 0
+  }
 }
 
 /**
@@ -18,6 +21,8 @@ export function criarBarco() {
  * foi grande ou pequeno.
  */
 export function atualizarBarco(barco, mouse, dt) {
+  barco.stunRestante = Math.max(0, barco.stunRestante - dt)
+  if (barco.stunRestante > 0) return
   if (!mouse.dentro) return // mouse fora do jogo: o barco fica parado onde estava
 
   const fator = 1 - Math.exp(-SUAVIZACAO * dt)

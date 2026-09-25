@@ -6,19 +6,19 @@ import { LARGURA_MUNDO, ALTURA_MUNDO } from '../engine/mundo.js'
 export const TIPOS_INIMIGO = {
   // rápido e frágil: pressiona o jogador a reagir rápido, mas morre fácil
   batedor: {
-    vida: 14, velocidade: 100, danoContato: 8,
+    vida: 18, velocidade: 100, danoContato: 9,
     raioBase: 16, escala: 1,
     cor: new Float32Array([1, 1, 1, 1])
   },
   // o "meio-termo": era o único tipo que existia até a Fase 3
   padrao: {
-    vida: 24, velocidade: 60, danoContato: 12,
+    vida: 30, velocidade: 60, danoContato: 12,
     raioBase: 22, escala: 1.2,
     cor: new Float32Array([1, 1, 1, 1])
   },
   // lento e resistente: obriga a concentrar fogo, é perigoso se ignorado
   brutamontes: {
-    vida: 50, velocidade: 35, danoContato: 20,
+    vida: 60, velocidade: 35, danoContato: 20,
     raioBase: 30, escala: 1.5,
     cor: new Float32Array([1, 1, 1, 1])
   }
