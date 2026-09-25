@@ -22,6 +22,7 @@ export function criarProjetil({
   velocidade = VELOCIDADE_PADRAO,
   duracaoMaxima = DURACAO_MAXIMA_PADRAO,
   aoAcertar = causarDano,
+  alvoTipo = 'inimigo',
   cor = null // opcional, só para o desenho tingir o sprite (ex.: azul = farol, amarelo = barco)
 }) {
   const dx = alvo.x - x
@@ -35,6 +36,7 @@ export function criarProjetil({
     dano,
     aoAcertar,
     alvo,
+    alvoTipo,
     duracaoMaxima,
     tempoDeVoo: 0,
     cor
