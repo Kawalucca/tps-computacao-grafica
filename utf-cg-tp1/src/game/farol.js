@@ -7,7 +7,9 @@ export const FAROL_VIDA_MAXIMA = 100
 // Posição VISUAL da lâmpada (onde o feixe de luz "nasce" e gira), em relação
 // ao centro do mundo. É diferente de (0,0) porque, no desenho, o farol fica
 // de pé sobre a ilha, deslocado para cima — ver POSICAO_FAROL_VISUAL em main.js.
-export const FAROL_LAMPADA = { x: 0, y: 170 }
+// AJUSTE AQUI PARA TESTAR A ALTURA DA LUZ: aumente ou diminua o valor de y
+// até o feixe sair na altura correta da lâmpada, sem tocar no resto do código.
+export const FAROL_LAMPADA = { x: 0, y: 130 }
 
 const VELOCIDADE_GIRO_LUZ = Math.PI / 6 // rad/s (uma volta completa a cada 12s)
 

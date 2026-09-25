@@ -11,6 +11,7 @@ import { criarFarol, atualizarFarol, FAROL_LAMPADA } from './game/farol.js'
 import { criarBarco, atualizarBarco } from './game/barco.js'
 import { ILHA } from './game/ilha.js'
 import { criarInimigo, atualizarInimigo, FLASH_DURACAO } from './game/inimigo.js'
+import { criarBoss, atualizarBoss, atualizarDisparoBoss, caminhoDoBoss } from './game/boss.js'
 import { atualizarProjetil, verificarImpacto } from './game/projetil.js'
 import { criarAtirador, atualizarAtirador } from './game/ataque.js'
 import { ONDAS, criarGerenciadorOndas, atualizarOndas } from './game/ondas.js'
@@ -45,6 +46,8 @@ const TAMANHO_INIMIGO_BASE = 56 // multiplicado pela `escala` de cada tipo (inim
 const TAMANHO_PROJETIL = 18
 const COR_PROJETIL_FAROL = new Float32Array([0.65, 0.85, 1, 1]) // azul clarinho
 const COR_PROJETIL_BARCO = new Float32Array([1, 0.85, 0.3, 1]) // amarelo
+const COR_CAMINHO_BOSS = new Float32Array([1, 0.08, 0.08, 0.9])
+const COR_BARCO_STUN = new Float32Array([0.25, 0.65, 1, 1])
 const COR_FLASH_INIMIGO = new Float32Array([1, 1, 1, 1]) // "pisca" de branco ao tomar dano
 
 // ---- regras de jogo ----
@@ -84,7 +87,7 @@ function criarHud() {
 /** Texto amigável para o estado do gerenciador de ondas, mostrado no HUD. */
 function textoDaOnda(ondas) {
   if (ondas.estado === 'concluido') {
-    return 'Todas as ondas derrotadas!' // até a Fase 5 conectar o próximo desafio
+    return 'Chefe: Holandês Voador'
   }
   const numeroOnda = Math.min(ondas.indiceOnda + 1, ONDAS.length)
   return `Onda ${numeroOnda} de ${ONDAS.length}`
@@ -136,6 +139,7 @@ function criarEstadoJogo() {
     inimigos: criarPool(CAPACIDADE_INIMIGOS),
     projeteis: criarPool(CAPACIDADE_PROJETEIS),
     ondas: criarGerenciadorOndas(),
+    bossCriado: false,
     atiradorFarol: criarAtirador({ alcance: 260, cadencia: 0.8, dano: 12, velocidadeProjetil: 500, cor: COR_PROJETIL_FAROL }),
     atiradorBarco: criarAtirador({ alcance: 140, cadencia: 0.5, dano: 8, velocidadeProjetil: 600, cor: COR_PROJETIL_BARCO }),
     pontuacao: 0,
@@ -149,7 +153,7 @@ async function main() {
 
   const programa = await carregarPrograma(gl, 'shaders/sprite.vert.glsl', 'shaders/sprite.frag.glsl')
 
-  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoBatedorTex, inimigoPadraoTex, inimigoBrutamontesTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
+  const [mar, ilhaTex, farolTex, feixe, barcoTex, inimigoBatedorTex, inimigoPadraoTex, inimigoBrutamontesTex, bossTex, projetilTex, somTiro, somImpacto, somMorte] = await Promise.all([
     carregarTextura(gl, 'assets/images/mar.jpg', { mipmap: true }),
     carregarTextura(gl, 'assets/images/ilha.png'),
     carregarTextura(gl, 'assets/images/farol.png'),
@@ -158,6 +162,7 @@ async function main() {
     carregarTextura(gl, 'assets/images/inimigo-batedor.png'),
     carregarTextura(gl, 'assets/images/inimigo-padrao.png'),
     carregarTextura(gl, 'assets/images/inimigo-brutamontes.png'),
+    carregarTextura(gl, 'assets/images/boss.png'),
     carregarTextura(gl, 'assets/images/projetil.png'),
     carregarSom('assets/sounds/tiro.wav'),
     carregarSom('assets/sounds/impacto.wav'),
@@ -167,7 +172,8 @@ async function main() {
   const texturasInimigos = {
     batedor: inimigoBatedorTex,
     padrao: inimigoPadraoTex,
-    brutamontes: inimigoBrutamontesTex
+    brutamontes: inimigoBrutamontesTex,
+    boss: bossTex
   }
 
   const renderizador = new RenderizadorSprites(gl, programa)
@@ -217,14 +223,25 @@ async function main() {
       const tipoParaNascer = atualizarOndas(estado.ondas, estado.inimigos.quantidade, dt)
       if (tipoParaNascer) adicionar(estado.inimigos, criarInimigo(tipoParaNascer))
 
+      if (estado.ondas.estado === 'concluido' && !estado.bossCriado) {
+        adicionar(estado.inimigos, criarBoss())
+        estado.bossCriado = true
+      }
+
       // inimigos: andam até o farol e, encostados, causam dano contínuo nele
-      paraCadaAtivo(estado.inimigos, (inimigo) => atualizarInimigo(inimigo, estado.farol, dt))
+      paraCadaAtivo(estado.inimigos, (inimigo) => {
+        if (inimigo.tipoId === 'boss') atualizarBoss(inimigo, estado.farol, dt)
+        else atualizarInimigo(inimigo, estado.farol, dt)
+      })
+
+      const boss = buscarAtivo(estado.inimigos, (inimigo) => inimigo.tipoId === 'boss')
+      if (boss) atualizarDisparoBoss(boss, estado.barco, estado.projeteis, dt)
 
       // farol e barco: cada um mira e atira sozinho no inimigo mais próximo
       if (atualizarAtirador(estado.atiradorFarol, estado.farol, estado.inimigos, estado.projeteis, dt)) {
         tocarEfeito(somTiro, { volume: 0.5, variacaoPitch: 0.08 })
       }
-      if (atualizarAtirador(estado.atiradorBarco, estado.barco, estado.inimigos, estado.projeteis, dt)) {
+      if (estado.barco.stunRestante <= 0 && atualizarAtirador(estado.atiradorBarco, estado.barco, estado.inimigos, estado.projeteis, dt)) {
         tocarEfeito(somTiro, { volume: 0.5, variacaoPitch: 0.08 })
       }
 
@@ -232,12 +249,18 @@ async function main() {
       // miravam ao nascer — ele pode ter morrido nesse meio-tempo), causam dano
       paraCadaAtivo(estado.projeteis, (projetil) => {
         atualizarProjetil(projetil, dt)
-        paraCadaAtivo(estado.inimigos, (inimigo) => {
-          if (estaViva(projetil) && verificarImpacto(projetil, inimigo)) {
-            inimigo.flashRestante = FLASH_DURACAO
+        if (projetil.alvoTipo === 'heroi') {
+          if (estaViva(projetil) && verificarImpacto(projetil, estado.barco)) {
             tocarEfeito(somImpacto, { volume: 0.4, variacaoPitch: 0.15 })
           }
-        })
+        } else {
+          paraCadaAtivo(estado.inimigos, (inimigo) => {
+            if (estaViva(projetil) && verificarImpacto(projetil, inimigo)) {
+              inimigo.flashRestante = FLASH_DURACAO
+              tocarEfeito(somImpacto, { volume: 0.4, variacaoPitch: 0.15 })
+            }
+          })
+        }
       })
 
       // pontuação e som de morte: verificados ANTES de remover quem morreu nesta rodada
@@ -287,6 +310,22 @@ async function main() {
     renderizador.desenhar(mar, 0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
     renderizador.desenhar(ilhaTex, ILHA.x, ILHA.y, TAMANHO_ILHA.largura, TAMANHO_ILHA.altura)
 
+    const boss = buscarAtivo(estado.inimigos, (inimigo) => inimigo.tipoId === 'boss')
+    if (boss) {
+      const caminho = caminhoDoBoss()
+      caminho.slice(0, -1).forEach((ponto, indice) => {
+        const proximo = caminho[indice + 1]
+        const x = (ponto.x + proximo.x) / 2
+        const y = (ponto.y + proximo.y) / 2
+        const largura = Math.hypot(proximo.x - ponto.x, proximo.y - ponto.y) * 0.42
+        const rotacao = Math.atan2(proximo.y - ponto.y, proximo.x - ponto.x)
+        renderizador.desenharRegiao(
+          projetilTex, x, y, largura, 5, rotacao,
+          UV_IMAGEM_INTEIRA, COR_CAMINHO_BOSS
+        )
+      })
+    }
+
     paraCadaAtivo(estado.inimigos, (inimigo) => {
       const tamanho = TAMANHO_INIMIGO_BASE * inimigo.escala
       const textura = texturasInimigos[inimigo.tipoId]
@@ -309,7 +348,13 @@ async function main() {
       )
     }
     function desenharBarco() {
-      renderizador.desenhar(barcoTex, estado.barco.x, estado.barco.y, TAMANHO_BARCO.largura, TAMANHO_BARCO.altura)
+      const piscando = Math.floor(estado.barco.stunRestante * 10) % 2 === 0
+      const cor = estado.barco.stunRestante > 0 && piscando ? COR_BARCO_STUN : COR_BRANCA
+      renderizador.desenharRegiao(
+        barcoTex, estado.barco.x, estado.barco.y,
+        TAMANHO_BARCO.largura, TAMANHO_BARCO.altura,
+        0, UV_IMAGEM_INTEIRA, cor
+      )
     }
 
     // o barco passa atrás do farol quando está mais ao norte que a base da torre
