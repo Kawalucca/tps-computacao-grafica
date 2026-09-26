@@ -46,6 +46,22 @@ function criarTextura(gl, imagem, { suave = true, mipmap = false } = {}) {
   return { textura, largura: imagem.naturalWidth, altura: imagem.naturalHeight }
 }
 
+/**
+ * Textura de 1 pixel branco: desenhada com o renderizador de sprites e tingida
+ * por `cor`, vira um retângulo sólido de qualquer cor (ex.: barras de vida).
+ */
+export function criarTexturaBranca(gl) {
+  const textura = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, textura)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]))
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.bindTexture(gl.TEXTURE_2D, null)
+  return { textura, largura: 1, altura: 1 }
+}
+
 /** Carrega uma imagem e já a transforma em textura. */
 export async function carregarTextura(gl, url, opcoes) {
   const imagem = await carregarImagem(url)

@@ -7,11 +7,12 @@ import { adicionar, paraCadaAtivo } from '../engine/pool.js'
 // módulo reaproveitado pelos dois, em vez de duas cópias quase iguais.
 
 /**
- * @param {{alcance: number, cadencia: number, dano: number, velocidadeProjetil?: number}} opcoes
+ * @param {{alcance: number, cadencia: number, dano: number, velocidadeProjetil?: number, categoria: string}} opcoes
  *   cadencia: segundos de espera entre um tiro e o próximo.
+ *   categoria: linha do spritesheet de projéteis a usar (ver projetil.js).
  */
-export function criarAtirador({ alcance, cadencia, dano, velocidadeProjetil, cor }) {
-  return { alcance, cadencia, dano, velocidadeProjetil, cor, cronometro: 0 }
+export function criarAtirador({ alcance, cadencia, dano, velocidadeProjetil, categoria }) {
+  return { alcance, cadencia, dano, velocidadeProjetil, categoria, cronometro: 0 }
 }
 
 /** Inimigo vivo mais próximo de `origem`, dentro de `alcance` — ou null. */
@@ -49,7 +50,7 @@ export function atualizarAtirador(atirador, origem, inimigos, projeteis, dt) {
     alvo,
     dano: atirador.dano,
     velocidade: atirador.velocidadeProjetil,
-    cor: atirador.cor
+    categoria: atirador.categoria
   })
   adicionar(projeteis, projetil)
   atirador.cronometro = atirador.cadencia
