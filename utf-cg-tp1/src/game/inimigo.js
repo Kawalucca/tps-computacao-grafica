@@ -1,4 +1,5 @@
 import { criarEntidade, causarDano } from './entidade.js'
+import { ILHA } from './ilha.js'
 import { LARGURA_MUNDO, ALTURA_MUNDO } from '../engine/mundo.js'
 
 // Cada tipo usa uma imagem própria. O tamanho (`escala`) também muda por
@@ -57,21 +58,27 @@ export function criarInimigo(tipoId) {
 }
 
 /**
- * Anda em direção ao farol; ao encostar, para de andar e passa a atacá-lo
- * (dano contínuo, não um golpe único) enquanto continuar encostado.
+ * Navega em direção à ilha do farol e para na borda dela (o mesmo círculo que
+ * já bloqueia o barco do jogador — um navio não sobe nas rochas). Parado ali,
+ * ataca o farol com dano contínuo enquanto continuar na costa.
  */
 export function atualizarInimigo(inimigo, farol, dt) {
   inimigo.flashRestante = Math.max(0, inimigo.flashRestante - dt)
 
-  const dx = farol.x - inimigo.x
-  const dy = farol.y - inimigo.y
+  const dx = ILHA.x - inimigo.x
+  const dy = ILHA.y - inimigo.y
   const distancia = Math.hypot(dx, dy)
-  const alcance = farol.raio + inimigo.raio
+  const distanciaDaCosta = ILHA.raio + inimigo.raio
+  const passo = inimigo.velocidade * dt
 
-  if (distancia > alcance) {
-    inimigo.x += (dx / distancia) * inimigo.velocidade * dt
-    inimigo.y += (dy / distancia) * inimigo.velocidade * dt
+  if (distancia - passo > distanciaDaCosta) {
+    inimigo.x += (dx / distancia) * passo
+    inimigo.y += (dy / distancia) * passo
   } else {
+    // encosta exatamente na borda (sem ultrapassar nem num quadro com dt grande)
+    const fator = distanciaDaCosta / distancia
+    inimigo.x = ILHA.x - dx * fator
+    inimigo.y = ILHA.y - dy * fator
     causarDano(farol, inimigo.danoContato * dt)
   }
 }
