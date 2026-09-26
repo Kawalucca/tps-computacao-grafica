@@ -75,6 +75,17 @@ export class RenderizadorSprites {
   }
 
   /**
+   * Mistura ADITIVA (a cor do sprite SOMA com o que já está na tela — como luz
+   * somando luz: clareia, nunca escurece) ou a normal, por transparência.
+   * Lembre de voltar para a normal depois de desenhar o que precisava.
+   */
+  usarMisturaAditiva(aditiva) {
+    const gl = this.gl
+    if (aditiva) gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+    else gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  }
+
+  /**
    * Desenha a textura inteira, centrada em (x, y) do mundo.
    * `rotacao` em radianos (anti-horária).
    */

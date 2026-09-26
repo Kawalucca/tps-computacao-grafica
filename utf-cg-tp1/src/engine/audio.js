@@ -1,16 +1,21 @@
-// Áudio do jogo: efeitos curtos (arquivos .wav, carregados uma vez e
-// tocados várias vezes) e uma música de fundo SINTETIZADA AO VIVO com
-// osciladores do Web Audio, em vez de um arquivo — assim nunca temos o
-// problema clássico de "costura" perceptível no ponto onde um arquivo de
-// música dá loop.
+// Áudio do jogo: efeitos curtos e música de fundo, ambos carregados de
+// arquivo (.mp3) e decodificados pelo Web Audio — decodeAudioData não liga
+// para o codec, então funciona igual para .wav, .mp3 ou .mp4/.m4a (áudio em
+// container mp4/AAC), desde que o navegador saiba decodificar o formato.
 //
 // Navegadores bloqueiam qualquer som até a primeira interação do jogador
 // (clique, tecla, toque) — é política de todo navegador, não um bug nosso.
 // Por isso o AudioContext só é criado/retomado dentro de destravarAudio(),
 // chamada no primeiro clique dentro do jogo (ver main.js).
 
+// A música é a protagonista: todos os efeitos passam por um canal próprio,
+// com volume menor, antes de chegar no volume mestre. Pra equilibrar
+// efeitos x música, é só mexer neste número (não em cada tocarEfeito).
+const VOLUME_EFEITOS = 0.65
+
 let contexto = null
 let volumeMestre = null
+let volumeEfeitos = null
 let musicaIniciada = false
 
 /** Cria (uma vez) e retoma o AudioContext. Chame na primeira interação do jogador. */
@@ -20,6 +25,9 @@ export function destravarAudio() {
     volumeMestre = contexto.createGain()
     volumeMestre.gain.value = 0.5
     volumeMestre.connect(contexto.destination)
+    volumeEfeitos = contexto.createGain()
+    volumeEfeitos.gain.value = VOLUME_EFEITOS
+    volumeEfeitos.connect(volumeMestre)
   }
   if (contexto.state === 'suspended') contexto.resume()
   return contexto
@@ -34,8 +42,26 @@ export function destravarAudio() {
 export async function carregarSom(url) {
   const ctx = contexto || new (window.AudioContext || window.webkitAudioContext)()
   const resposta = await fetch(url)
+  if (!resposta.ok) {
+    throw new Error(`Não foi possível baixar "${url}" (HTTP ${resposta.status})`)
+  }
   const bytes = await resposta.arrayBuffer()
   return ctx.decodeAudioData(bytes)
+}
+
+/**
+ * Como carregarSom, mas nunca lança erro: devolve `null` se o arquivo ainda
+ * não existir (ex.: a trilha sonora, adicionada depois) ou não puder ser
+ * decodificado, só avisando no console. Usada para qualquer som que não deve
+ * travar o carregamento do jogo inteiro se estiver faltando.
+ */
+export async function carregarSomOpcional(url) {
+  try {
+    return await carregarSom(url)
+  } catch (erro) {
+    console.warn(`Áudio opcional "${url}" não carregado: ${erro.message}`)
+    return null
+  }
 }
 
 /**
@@ -44,7 +70,7 @@ export async function carregarSom(url) {
  * evita erro se algum som tentar tocar antes do primeiro clique do jogador.
  */
 export function tocarEfeito(buffer, { volume = 1, variacaoPitch = 0 } = {}) {
-  if (!contexto || contexto.state !== 'running') return
+  if (!buffer || !contexto || contexto.state !== 'running') return
 
   const fonte = contexto.createBufferSource()
   fonte.buffer = buffer
@@ -57,43 +83,27 @@ export function tocarEfeito(buffer, { volume = 1, variacaoPitch = 0 } = {}) {
   const ganho = contexto.createGain()
   ganho.gain.value = volume
   fonte.connect(ganho)
-  ganho.connect(volumeMestre)
+  ganho.connect(volumeEfeitos)
   fonte.start()
 }
 
 /**
- * Música de fundo: 3 osciladores tocando um acorde simples e sustentado,
- * cada um com um LFO lento de volume (para "respirar" em vez de ficar
- * estático). Chamar só uma vez — chamadas repetidas são ignoradas.
+ * Música de fundo: toca `buffer` (carregado com carregarSom/carregarSomOpcional)
+ * em loop contínuo. Chamar só uma vez — chamadas repetidas são ignoradas.
+ * Se `buffer` for `null` (arquivo da trilha ainda não adicionado em
+ * assets/sounds/), simplesmente não toca nada, sem erro.
  */
-export function iniciarMusicaFundo() {
-  if (musicaIniciada || !contexto) return
+export function iniciarMusicaFundo(buffer) {
+  if (musicaIniciada || !contexto || !buffer) return
   musicaIniciada = true
 
   const ganhoMusica = contexto.createGain()
-  ganhoMusica.gain.value = 0.1 // ainda discreto, mas audível em alto-falantes de notebook
+  ganhoMusica.gain.value = 0.35
   ganhoMusica.connect(volumeMestre)
 
-  const NOTAS = [196, 246.94, 293.66] // sol3, si3, ré4 — mesmo acorde, uma oitava acima (fica mais audível em alto-falantes pequenos, que reproduzem mal graves)
-  for (let i = 0; i < NOTAS.length; i++) {
-    const osc = contexto.createOscillator()
-    osc.type = 'sine'
-    osc.frequency.value = NOTAS[i]
-
-    const lfo = contexto.createOscillator()
-    lfo.frequency.value = 0.05 + i * 0.02 // cada nota "respira" num ritmo levemente diferente
-    const profundidadeLfo = contexto.createGain()
-    profundidadeLfo.gain.value = 0.5
-
-    const ganhoNota = contexto.createGain()
-    ganhoNota.gain.value = 0.5
-
-    lfo.connect(profundidadeLfo)
-    profundidadeLfo.connect(ganhoNota.gain)
-    osc.connect(ganhoNota)
-    ganhoNota.connect(ganhoMusica)
-
-    osc.start()
-    lfo.start()
-  }
+  const fonte = contexto.createBufferSource()
+  fonte.buffer = buffer
+  fonte.loop = true
+  fonte.connect(ganhoMusica)
+  fonte.start()
 }
