@@ -70,98 +70,394 @@ body {
   position: absolute;
   bottom: 0.5rem;
   left: 0.75rem;
-  font: 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  padding: 0.25rem 0.6rem;
+  background: rgba(30, 18, 8, 0.65);
+  border: 1px solid rgba(217, 169, 74, 0.5);
+  border-radius: 0.4rem;
+  font: 11px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #f3dfb8;
   opacity: 0.85;
 }
 
-/* --- Fase 3: HUD e tela de fim de jogo --- */
+/* --- HUD: painéis "de madeira com borda dourada", no estilo da referência --- */
 
 #hud .hud-vida,
 #hud .hud-pontuacao,
 #hud .hud-onda {
   position: absolute;
-  top: 0.75rem;
-  font: 700 20px/1.3 system-ui, sans-serif;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  top: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.9rem;
+  background: linear-gradient(160deg, #6b4322, #3c2510);
+  border: 2px solid #d9a94a;
+  border-radius: 0.6rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 8px rgba(0, 0, 0, 0.3);
+  color: #ffe6a3;
+  font: 700 15px/1.2 Georgia, serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-#hud .tela-inicial {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  background: linear-gradient(160deg, rgba(3, 15, 35, 0.92), rgba(4, 54, 76, 0.82));
-  text-align: center;
-  pointer-events: auto;
+#hud .hud-vida-icone svg {
+  width: 22px;
+  height: 22px;
+  fill: #ff6b6b;
+  flex-shrink: 0;
 }
-#hud .tela-inicial h1 {
-  margin: 0;
-  color: #d9f6ff;
-  font: 700 clamp(2rem, 6vw, 4.5rem)/1.1 Georgia, serif;
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 24px rgba(96, 211, 255, 0.65);
+#hud .hud-vida-texto {
+  font-size: 14px;
+  margin-bottom: 3px;
 }
-#hud .tela-inicial button {
-  padding: 0.75rem 2.5rem;
-  border: 1px solid rgba(157, 232, 255, 0.8);
-  border-radius: 0.35rem;
-  background: #8ee6ff;
-  color: #062234;
-  font: 700 1.1rem Georgia, serif;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(76, 205, 255, 0.45);
+#hud .hud-vida-barra {
+  width: 140px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.5);
 }
-#hud .tela-inicial button:hover {
-  background: #c5f3ff;
+#hud .hud-vida-barra-preenchimento {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffb56b);
+  transition: width 0.2s ease;
 }
-#hud .hud-vida { left: 1rem; }
-#hud .hud-pontuacao { right: 1rem; }
+
+#hud .hud-pontuacao {
+  flex-direction: row-reverse;
+}
+#hud .hud-pontuacao-corpo {
+  text-align: right;
+}
+#hud .hud-pontuacao-icone svg {
+  width: 22px;
+  height: 22px;
+  color: #ffe6a3;
+  flex-shrink: 0;
+}
+#hud .hud-pontuacao-rotulo {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+#hud .hud-pontuacao-texto {
+  font-size: 17px;
+}
+
 #hud .hud-onda {
   left: 50%;
   transform: translateX(-50%);
-  font-size: 16px;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 1.1rem;
+}
+#hud .hud-onda-texto {
+  font-size: 13px;
   opacity: 0.9;
 }
+#hud .hud-onda-pips {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+#hud .hud-onda-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #d9a94a;
+}
+#hud .hud-onda-pip.concluida {
+  background: #d9a94a;
+}
+#hud .hud-onda-pip.ativa {
+  background: #ffe6a3;
+  box-shadow: 0 0 6px 2px rgba(255, 230, 163, 0.7);
+}
+#hud .hud-onda-pip-boss {
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  padding: 0 3px;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #8a7a6a;
+  background: rgba(0, 0, 0, 0.4);
+}
+#hud .hud-onda-pip-boss.ativa {
+  color: #ff8a8a;
+  background: rgba(139, 0, 0, 0.5);
+  box-shadow: 0 0 6px 2px rgba(255, 80, 80, 0.6);
+}
 
-/* Alternada entre display:none e display:flex via JS (nunca window.alert). */
+/* --- Telas com arte de fundo (menu e fim de jogo) ---
+   A arte já traz título e botões desenhados; o HTML só sobrepõe "zonas
+   clicáveis" invisíveis em cima de cada botão da imagem. As posições (centro,
+   em %) foram medidas por pixel e conferidas desenhando as zonas por cima da
+   própria arte. Configurações/Créditos ainda não têm tela, então não recebem zona. */
+#hud .tela-inicial,
 #hud .tela-game-over {
   position: absolute;
   inset: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: auto;
+}
+#hud .tela-inicial { background-image: url(../assets/images/tela-menu.png); }
+#hud .tela-game-over { background-image: url(../assets/images/tela-fim-de-jogo.png); }
+
+#hud .zona-clicavel {
+  position: absolute;
+  left: 49.5%;
+  width: 24%;
+  height: 8.5%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, background 0.15s ease;
+}
+#hud .zona-clicavel:hover,
+#hud .zona-clicavel:focus-visible {
+  background: rgba(255, 214, 130, 0.14);
+  box-shadow: 0 0 22px 6px rgba(255, 205, 110, 0.55), inset 0 0 0 2px rgba(255, 224, 160, 0.6);
+}
+#hud .tela-inicial .zona-jogar { top: 53.1%; }
+#hud .tela-inicial .zona-sair { top: 83.4%; }
+#hud .tela-game-over .zona-jogar { top: 56.9%; }
+#hud .tela-game-over .zona-sair { top: 78.5%; }
+
+/* "Clique para começar": navegadores não deixam tocar som antes de um
+   clique/tecla, então esse primeiro clique destrava a trilha e revela o menu
+   já com a música tocando */
+#hud .tela-inicial-convite {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 16, 0.62);
+  transition: opacity 0.6s ease;
+}
+#hud .tela-inicial-convite p {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  color: #ffe6a3;
+  font: 700 clamp(1.1rem, 2.6vw, 1.8rem)/1.3 Georgia, serif;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 18px rgba(255, 190, 90, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  animation: pulsar 1.6s ease-in-out infinite;
+}
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+#hud .tela-inicial.pronta .tela-inicial-convite {
+  opacity: 0;
+  pointer-events: none;
+}
+#hud .tela-inicial:not(.pronta) .zona-clicavel {
+  display: none;
+}
+
+/* aviso ao clicar em "Sair": a maioria dos navegadores bloqueia
+   window.close() numa aba aberta pelo próprio jogador (não por script) —
+   então, se não fechar, ao menos avisamos em vez de não fazer nada */
+#hud .aviso-sair {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 4.5%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.35rem 1rem;
+  background: rgba(20, 12, 6, 0.8);
+  border: 1px solid rgba(217, 169, 74, 0.6);
+  border-radius: 0.4rem;
+  color: #f3dfb8;
+  font: 500 0.85rem/1.3 Georgia, serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+#hud .aviso-sair.visivel {
+  display: block;
+}
+
+#hud .hud-vida { left: 1rem; }
+#hud .hud-pontuacao { right: 1rem; }
+
+/* a arte de fundo é a de DERROTA ("GAME OVER" + "O farol se apagou..."); na
+   vitória (sem arte própria ainda) este banner cobre a placa do título E o
+   subtítulo de derrota — área conferida desenhando a caixa sobre a arte */
+#hud .tela-game-over-banner-vitoria {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 33.5%;
+  width: 44%;
+  height: 29%;
+  transform: translate(-50%, -50%);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  background: rgba(4, 12, 18, 0.82);
+  padding: 1rem 1.5rem;
+  background: linear-gradient(160deg, #6b3f18, #3e2410);
+  border: 3px solid #d9a94a;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.35);
   text-align: center;
-  /* diferente do resto do #hud (pointer-events: none): esta tela PRECISA
-     capturar o clique do botão de reiniciar */
+}
+#hud .tela-game-over.venceu .tela-game-over-banner-vitoria {
+  display: flex;
+}
+#hud .tela-game-over-banner-vitoria h2 {
+  margin: 0 0 0.35rem;
+  color: #ffe6a3;
+  font: 700 clamp(1.6rem, 4.2vw, 2.8rem)/1.1 Georgia, serif;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+#hud .tela-game-over-banner-vitoria p {
+  margin: 0;
+  color: #f3dfb8;
+  font: 500 clamp(0.85rem, 1.6vw, 1.05rem)/1.4 Georgia, serif;
+}
+
+/* placa própria (como os painéis do HUD), no rodapé, abaixo do "Sair" — a
+   única faixa livre da arte que não cobre nenhum botão nem o título */
+#hud .tela-game-over-pontuacao {
+  position: absolute;
+  left: 50%;
+  top: 88.5%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  margin: 0;
+  padding: 0.4rem 1.4rem;
+  background: linear-gradient(160deg, #6b4322, #3c2510);
+  border: 2px solid #d9a94a;
+  border-radius: 0.6rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 8px rgba(0, 0, 0, 0.3);
+  color: #ffe6a3;
+  font: 700 clamp(0.95rem, 2vw, 1.25rem)/1.2 Georgia, serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+#hud .tela-game-over-creditos {
+  position: absolute;
+  left: 50%;
+  bottom: 0.6rem;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #f3dfb8;
+  opacity: 0.75;
+  text-transform: lowercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* --- Barra de vida do chefe: dentro do painel da onda, só com o chefe em campo --- */
+#hud .hud-boss-barra {
+  display: none;
+  width: 220px;
+  height: 9px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+}
+#hud .hud-onda.com-boss .hud-boss-barra {
+  display: block;
+}
+#hud .hud-boss-barra-preenchimento {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #17a877, #7dffcf);
+  box-shadow: 0 0 8px rgba(80, 255, 190, 0.7);
+  transition: width 0.15s ease;
+}
+
+/* --- Pausa --- */
+#hud .hud-pausa {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.75rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: linear-gradient(160deg, #6b4322, #3c2510);
+  border: 2px solid #d9a94a;
+  border-radius: 0.6rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 8px rgba(0, 0, 0, 0.3);
+  color: #ffe6a3;
+  cursor: pointer;
   pointer-events: auto;
 }
-#hud .tela-game-over h2 {
-  margin: 0;
-  font-size: 2rem;
+#hud .hud-pausa:hover,
+#hud .hud-pausa:focus-visible {
+  box-shadow: 0 0 14px 3px rgba(255, 205, 110, 0.5);
 }
-#hud .tela-game-over button {
-  padding: 0.6rem 1.4rem;
-  font-size: 1rem;
-  font-weight: 700;
-  border: none;
+#hud .hud-pausa svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+#hud .tela-pausa {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  background: rgba(3, 8, 16, 0.55);
+  pointer-events: auto;
+}
+#hud .tela-pausa.visivel {
+  display: grid;
+}
+#hud .tela-pausa-painel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.4rem 2.6rem;
+  background: linear-gradient(160deg, #6b3f18, #3e2410);
+  border: 3px solid #d9a94a;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+#hud .tela-pausa h2 {
+  margin: 0;
+  color: #ffe6a3;
+  font: 700 clamp(1.6rem, 3.6vw, 2.4rem)/1.1 Georgia, serif;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+#hud .tela-pausa button {
+  padding: 0.55rem 1.8rem;
+  background: linear-gradient(160deg, #8a5a2b, #54321a);
+  border: 2px solid #d9a94a;
   border-radius: 0.5rem;
-  background: var(--texto);
-  color: var(--fundo-pagina);
+  color: #ffe6a3;
+  font: 700 1.05rem Georgia, serif;
   cursor: pointer;
 }
-#hud .tela-game-over button:hover {
-  opacity: 0.85;
+#hud .tela-pausa button:hover,
+#hud .tela-pausa button:focus-visible {
+  box-shadow: 0 0 14px 3px rgba(255, 205, 110, 0.5);
 }
-#hud .tela-game-over-creditos {
+#hud .tela-pausa p {
   margin: 0;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
+  color: #f3dfb8;
+  font: 500 0.8rem Georgia, serif;
   opacity: 0.8;
-  text-transform: lowercase;
-  pointer-events: none;
 }
