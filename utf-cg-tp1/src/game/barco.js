@@ -3,7 +3,8 @@ import { criarEntidade } from './entidade.js'
 export const BARCO_RAIO = 24
 
 // Quanto MAIOR, mais "colado" no cursor; quanto MENOR, mais inércia/atraso.
-const SUAVIZACAO = 10
+// Reduzido 30% (era 10) para o deslocamento pelo mapa exigir mais tempo/desafio.
+const SUAVIZACAO = 7
 
 // abaixo dessa distância horizontal do mouse, não recalcula a direção — sem
 // isso, o barco "trepidaria" de lado a lado (virando a cada quadro) sempre

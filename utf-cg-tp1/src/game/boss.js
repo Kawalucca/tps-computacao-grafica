@@ -15,7 +15,7 @@ const RAIO_CAMINHO_INICIAL = { x: 520, y: 250 }
 // centro = raio da ilha + raio do boss (mesmo limite do barco e dos piratas)
 const RAIO_CAMINHO_FINAL = { x: 215, y: ILHA.raio + RAIO_BOSS + 16 }
 const QUANTIDADE_WAYPOINTS = 18
-const VELOCIDADE = 58
+const VELOCIDADE = 52 // -10% (era 58)
 // balanceamento (ver conversa de ajuste): com os números originais
 // (vida 500, cadência 1.8s, atordoamento 1.5s) o DPS efetivo do jogador
 // contra o boss ficava em ~5/s (o atordoamento anulava ~83% da cadência do
@@ -24,7 +24,7 @@ const VELOCIDADE = 58
 // ~2.9s de contato, chegando lá bem antes. Valores abaixo são um meio-termo
 // deliberado: ainda difícil (exige desviar/reposicionar o barco), mas
 // matável dentro do tempo que o boss leva pra percorrer o caminho.
-const VIDA = 320
+const VIDA = 480 // +50% (era 320)
 const DANO_CONTATO = 35
 const CADENCIA_TIRO = 2.2
 const VELOCIDADE_PROJETIL = 300
