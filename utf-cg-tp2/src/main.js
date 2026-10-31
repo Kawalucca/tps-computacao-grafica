@@ -18,6 +18,10 @@ async function main() {
     throw new Error("WebGL2 não disponível neste navegador");
   }
 
+  // A TWGL nomeia os atributos só como "position", "normal"... (sem prefixo). Como os shaders usam
+  // a_position, a_normal..., o prefixo precisa ser informado, senão o shader não recebe nenhum vértice.
+  twgl.setDefaults({ attribPrefix: "a_" });
+
   // Módulos ES não importam .glsl, então os shaders vêm por fetch (por isso precisa de servidor local).
   const [vs, fs] = await Promise.all([
     carregarTexto("src/shaders/solido.vert"),
