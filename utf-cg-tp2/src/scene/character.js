@@ -28,9 +28,9 @@ export function criarMatrizPersonagem(personagem, modelo, twgl) {
   const escalaUniforme = personagem.alturaAlvo / Math.max(alturaModelo, 0.001);
 
   let matriz = m4.translation(pose.posicao);
-  matriz = m4.multiply(matriz, m4.yRotation(pose.rotacao[1]));
-  matriz = m4.multiply(matriz, m4.xRotation(pose.rotacao[0]));
-  matriz = m4.multiply(matriz, m4.zRotation(pose.rotacao[2]));
+  matriz = m4.multiply(matriz, m4.rotationY(pose.rotacao[1]));
+  matriz = m4.multiply(matriz, m4.rotationX(pose.rotacao[0]));
+  matriz = m4.multiply(matriz, m4.rotationZ(pose.rotacao[2]));
   matriz = m4.multiply(matriz, m4.scaling([escalaUniforme, escalaUniforme, escalaUniforme]));
 
   // Centraliza a malha antes de posicioná-la no diorama.

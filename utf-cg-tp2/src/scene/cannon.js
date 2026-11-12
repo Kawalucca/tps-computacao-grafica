@@ -20,8 +20,8 @@ export function obterPartesCanhao(estado, m4) {
 
   // A matriz do tubo é filha do ponto de articulação do canhão.
   let tubo = m4.translation([2.55, 0.68, -2.25]);
-  tubo = m4.multiply(tubo, m4.yRotation(estado.angulo));
-  tubo = m4.multiply(tubo, m4.xRotation(Math.PI / 2));
+  tubo = m4.multiply(tubo, m4.rotationY(estado.angulo));
+  tubo = m4.multiply(tubo, m4.rotationX(Math.PI / 2));
   tubo = m4.multiply(tubo, m4.translation([0, 0, 0.43]));
   tubo = m4.multiply(tubo, m4.scaling([0.14, 0.14, 0.78]));
 

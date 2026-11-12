@@ -1,9 +1,9 @@
 // Funções simples para montar matrizes de transformação dos objetos.
 export function criarMatrizModelo(m4, posicao, escala, rotacao = [0, 0, 0]) {
   let modelo = m4.translation(posicao);
-  modelo = m4.multiply(modelo, m4.yRotation(rotacao[1]));
-  modelo = m4.multiply(modelo, m4.xRotation(rotacao[0]));
-  modelo = m4.multiply(modelo, m4.zRotation(rotacao[2]));
+  modelo = m4.multiply(modelo, m4.rotationY(rotacao[1]));
+  modelo = m4.multiply(modelo, m4.rotationX(rotacao[0]));
+  modelo = m4.multiply(modelo, m4.rotationZ(rotacao[2]));
   return m4.multiply(modelo, m4.scaling(escala));
 }
 

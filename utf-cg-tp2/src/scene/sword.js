@@ -3,9 +3,9 @@
 
 export function criarPartesEspada(m4, poseLevi) {
   let raiz = m4.translation(poseLevi.posicao);
-  raiz = m4.multiply(raiz, m4.yRotation(poseLevi.rotacao[1]));
-  raiz = m4.multiply(raiz, m4.xRotation(poseLevi.rotacao[0]));
-  raiz = m4.multiply(raiz, m4.zRotation(poseLevi.rotacao[2]));
+  raiz = m4.multiply(raiz, m4.rotationY(poseLevi.rotacao[1]));
+  raiz = m4.multiply(raiz, m4.rotationX(poseLevi.rotacao[0]));
+  raiz = m4.multiply(raiz, m4.rotationZ(poseLevi.rotacao[2]));
 
   const partes = [];
 
