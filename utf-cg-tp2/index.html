@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Diorama 3D Attack on Titan desenvolvido em WebGL 2.">
-  <title>Attack on Titan — Levi vs. Zeke</title>
-  <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #101318;
-    }
-
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  </style>
+  <meta name="description" content="Diorama 3D de Levi e Zeke feito com WebGL 2 e TWGL.js.">
+  <title>Attack on Titan · Levi vs. Zeke — TP2 Computação Gráfica</title>
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" aria-label="Diorama tridimensional do confronto entre Levi e Zeke"></canvas>
+  <header class="painel">
+    <span class="sobretitulo">COMPUTAÇÃO GRÁFICA · TP2</span>
+    <h1>ATTACK ON TITAN</h1>
+    <p class="subtitulo">Levi Ackerman <span>×</span> Zeke Yeager</p>
+    <p id="status" class="status">Carregando cena...</p>
+    <div id="ajuda" class="ajuda">
+      <p><kbd>1</kbd> Câmera automática · <kbd>2</kbd> Câmera orbital</p>
+      <p><kbd>Arrastar</kbd> Girar (câmera 2) · <kbd>Scroll</kbd> Zoom</p>
+      <p><kbd>P</kbd> Poses · <kbd>L</kbd> Luz · <kbd>N</kbd> Neblina</p>
+      <p><kbd>M</kbd> Áudio · <kbd>H</kbd> Mostrar/ocultar ajuda</p>
+    </div>
+    <button id="audio-toggle" type="button">Ativar som (M)</button>
+  </header>
+  <footer class="rodape">Diorama WebGL 2 · Projeto estudantil não oficial · Modelos demonstrativos originais</footer>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>
