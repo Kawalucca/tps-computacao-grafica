@@ -1,27 +1,16 @@
-# Modelos dos personagens
+# Modelos GLB — Levi e Zeke
 
-O carregador procura estes arquivos, relativos à pasta `utf-cg-tp2`:
+Os arquivos `levi.glb` e `zeke.glb` deste pacote são **modelos demonstrativos originais simplificados** gerados por `tools/gerar_recursos.py` com `trimesh`.
 
-- `assets/models/levi.glb`
-- `assets/models/zeke.glb`
+Eles não são modelos oficiais de *Attack on Titan*, não foram retirados do anime e não foram obtidos de terceiros. Representam, de forma estilizada, a composição proposta e permitem testar o carregador GLB do projeto sem baixar ativos externos.
 
-## Modelos provisórios
+## Substituir por modelos mais detalhados
 
-Os modelos atuais são **provisórios**: versões simplificadas e estilizadas, criadas
-apenas para testar o carregador GLB do projeto. Não são modelos oficiais nem
-reproduções detalhadas dos personagens, e serão substituídos pelos definitivos.
-Os créditos serão registrados aqui quando os modelos definitivos forem adicionados.
+1. Coloque os novos modelos como `assets/models/levi.glb` e `assets/models/zeke.glb`.
+2. Use glTF 2.0/GLB 2.0 sem compressão Draco ou Meshopt.
+3. Prefira malhas triangulares estáticas, normais e texturas baseColor.
+4. Se os modelos vierem com animações esqueléticas, esta versão **não executa skinning**; exporte-os na pose desejada.
+5. Confira posicionamento, escala e orientação na aplicação; as transformações estão em `src/scene/levi.js` e `zeke.js`.
+6. Atualize os créditos do README principal com autor, fonte, licença e alterações realizadas.
 
-- `levi.glb`: Levi Ackerman (provisório).
-- `zeke.glb`: Titã Bestial (provisório).
-
-Enquanto o arquivo de um personagem não existir, a cena utiliza uma geometria
-provisória no lugar dele.
-
-Antes de adicionar um modelo:
-1. confirme que é glTF 2.0 ou GLB 2.0;
-2. verifique se não utiliza compressão Draco/Meshopt;
-3. teste se o arquivo é renderizado pelo carregador do projeto;
-4. registre autor, URL de origem, licença e eventuais alterações.
-
-Não remova nem substitua os créditos exigidos pela licença do autor.
+**Carregador**: implementa um subconjunto de glTF 2.0 (geometria, nós, normais, UV, texturas baseColor e cores). Não é um renderizador PBR completo.

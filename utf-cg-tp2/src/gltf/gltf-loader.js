@@ -374,8 +374,29 @@ function criarMateriais(gltf, texturas) {
       textura: infoTextura ? texturas[infoTextura.index] || null : null,
       doubleSided: Boolean(material.doubleSided),
       alphaMode: material.alphaMode || "OPAQUE",
+      alphaCutoff: material.alphaCutoff ?? 0.5,
+      roughness: pbr.roughnessFactor ?? 1.0,
+      metallic: pbr.metallicFactor ?? 0.0,
     };
   });
+}
+
+function gerarNormais(posicoes, indices) {
+  const normais = new Float32Array(posicoes.length);
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i] * 3, b = indices[i + 1] * 3, c = indices[i + 2] * 3;
+    const ab = [posicoes[b] - posicoes[a], posicoes[b+1] - posicoes[a+1], posicoes[b+2] - posicoes[a+2]];
+    const ac = [posicoes[c] - posicoes[a], posicoes[c+1] - posicoes[a+1], posicoes[c+2] - posicoes[a+2]];
+    const n = [ab[1]*ac[2]-ab[2]*ac[1], ab[2]*ac[0]-ab[0]*ac[2], ab[0]*ac[1]-ab[1]*ac[0]];
+    for (const indice of [a,b,c]) {
+      normais[indice] += n[0]; normais[indice+1] += n[1]; normais[indice+2] += n[2];
+    }
+  }
+  for (let i = 0; i < normais.length; i += 3) {
+    const n = Math.hypot(normais[i],normais[i+1],normais[i+2]) || 1;
+    normais[i] /= n; normais[i+1] /= n; normais[i+2] /= n;
+  }
+  return normais;
 }
 
 function criarPrimitivas(gl, twgl, gltf, buffers, materiais) {
@@ -412,8 +433,12 @@ function criarPrimitivas(gl, twgl, gltf, buffers, materiais) {
       }
 
       const indices = lerIndices(gltf, buffers, primitiva.indices, posicao.quantidade);
+      const normais = primitiva.attributes.NORMAL !== undefined
+        ? lerAccessor(gltf, buffers, primitiva.attributes.NORMAL, true).valores
+        : gerarNormais(posicao.valores, indices);
       const bufferInfo = twgl.createBufferInfoFromArrays(gl, {
         position: { numComponents: 3, data: posicao.valores },
+        normal: { numComponents: 3, data: normais },
         texcoord: { numComponents: 2, data: uv },
         indices,
       });

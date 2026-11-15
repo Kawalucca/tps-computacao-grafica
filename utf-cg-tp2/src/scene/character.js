@@ -24,6 +24,7 @@ export function criarMatrizPersonagem(personagem, modelo, twgl) {
 
   // Se o arquivo ainda não foi colocado na pasta, usa uma escala provisória.
   const centro = modelo?.limites?.centro || [0, 0, 0];
+  const minimoY = modelo?.limites?.minimo?.[1] ?? 0;
   const alturaModelo = modelo?.limites?.altura || personagem.alturaAlvo;
   const escalaUniforme = personagem.alturaAlvo / Math.max(alturaModelo, 0.001);
 
@@ -36,7 +37,7 @@ export function criarMatrizPersonagem(personagem, modelo, twgl) {
   // Centraliza a malha antes de posicioná-la no diorama.
   matriz = m4.multiply(matriz, m4.translation([
     -centro[0],
-    -centro[1],
+    -minimoY,
     -centro[2],
   ]));
 

@@ -10,8 +10,8 @@ export function criarPartesEspada(m4, poseLevi) {
   const partes = [];
 
   // Lâmina longa, posicionada à frente de Levi.
-  let lamina = m4.multiply(raiz, m4.translation([0, 1.90, 1.25]));
-  lamina = m4.multiply(lamina, m4.scaling([0.045, 0.045, 1.48]));
+  let lamina = m4.multiply(raiz, m4.translation([0, 1.90, 1.48]));
+  lamina = m4.multiply(lamina, m4.scaling([0.045, 0.045, 2.10]));
 
   // Guarda transversal próxima ao punho.
   let guarda = m4.multiply(raiz, m4.translation([0, 1.90, 0.10]));

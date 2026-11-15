@@ -5,17 +5,17 @@ import { criarEstadoPersonagem } from "./character.js";
 export const POSES_LEVI = [
   {
     nome: "Ataque",
-    posicao: [1.15, 0.12, 0.45],
+    posicao: [1.45, 0.62, 0.12],
     rotacao: [0, -Math.PI / 2, 0],
   },
   {
     nome: "Lateral",
-    posicao: [1.75, 0.12, 1.05],
+    posicao: [1.85, 0.42, 0.96],
     rotacao: [0, -1.15, 0],
   },
   {
     nome: "Aterrissagem",
-    posicao: [0.55, 0.12, 1.45],
+    posicao: [0.75, 0.13, 1.55],
     rotacao: [0, 0.20, 0],
   },
 ];
