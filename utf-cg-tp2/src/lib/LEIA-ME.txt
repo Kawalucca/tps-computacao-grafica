@@ -1,0 +1,5 @@
+DEPENDÊNCIA PRESERVADA DO REPOSITÓRIO
+
+O projeto importa ../lib/twgl-full.module.js. Esse arquivo já existe na branch develop do repositório Kawalucca/tps-computacao-grafica e, por isso, não foi duplicado neste ZIP.
+
+Ao extrair este pacote sobre o repositório existente, mantenha o arquivo original utf-cg-tp2/src/lib/twgl-full.module.js. Não o apague nem substitua por um arquivo vazio.
