@@ -1,10 +1,14 @@
-// Ambiente de vento sintetizado. Não exige arquivos ou músicas de terceiros.
-// O navegador só libera o som após uma interação explícita do usuário (tecla M).
+// Vento sintetizado e música de fundo, iniciados por interação do usuário.
 export function criarAudioAmbiente() {
   let contexto = null;
   let fonte = null;
   let ganho = null;
   let ligado = false;
+  let ativacao = null;
+  const musica = new Audio("assets/audio/abertura.mp3");
+  musica.loop = true;
+  musica.preload = "none";
+  musica.volume = 0.35;
 
   async function alternar() {
     if (!contexto) {
@@ -38,10 +42,31 @@ export function criarAudioAmbiente() {
       fonte.start();
     }
 
-    await contexto.resume();
-    ligado = !ligado;
-    ganho.gain.setTargetAtTime(ligado ? 0.22 : 0, contexto.currentTime, 0.4);
-    return ligado;
+    if (ativacao) return ativacao;
+    if (ligado) {
+      musica.pause();
+      ganho.gain.setTargetAtTime(0, contexto.currentTime, 0.4);
+      ligado = false;
+      return false;
+    }
+
+    // Ambos os pedidos são feitos durante a interação para respeitar as
+    // políticas de reprodução automática dos navegadores.
+    ativacao = (async () => {
+      try {
+        await Promise.all([contexto.resume(), musica.play()]);
+        ganho.gain.setTargetAtTime(0.22, contexto.currentTime, 0.4);
+        ligado = true;
+        return true;
+      } catch (erro) {
+        musica.pause();
+        ganho.gain.setTargetAtTime(0, contexto.currentTime, 0.4);
+        throw erro;
+      } finally {
+        ativacao = null;
+      }
+    })();
+    return ativacao;
   }
 
   return { alternar, get ligado() { return ligado; } };

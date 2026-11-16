@@ -6,17 +6,14 @@ O projeto usa JavaScript, WebGL 2, shaders GLSL e TWGL.js para auxiliar as opera
 
 ## Execução local
 
-É necessário um navegador com suporte a WebGL 2 e um servidor HTTP, pois os módulos, shaders e modelos são carregados por requisições `fetch`. Na raiz deste repositório, execute:
 
 ```bash
 py -m http.server 8000
 ```
 
-Depois, abra <http://localhost:8000/utf-cg-tp2/>. Em sistemas nos quais o comando é `python3`, use `python3 -m http.server 8000`. Abrir diretamente o arquivo HTML pode impedir o carregamento dos recursos.
-
 ## Cena e controles
 
-A cena inclui uma base circular com gramado e hemisfério inferior, árvores, muralha com portão, ruínas, destroços, vigas, bandeiras com as Asas da Liberdade, canhão articulado e os personagens. A iluminação usa componentes ambiente, difusa e especular; há texturas, céu, neblina, fumaça verde dos sinalizadores, pequenos jatos brancos no equipamento de Levi e som ambiente de vento sintetizado.
+A cena inclui uma base circular com gramado e hemisfério inferior, árvores, muralha com portão, ruínas, destroços, vigas, bandeiras com as Asas da Liberdade, canhão articulado e os personagens. A iluminação usa componentes ambiente, difusa e especular; há texturas, céu, neblina, fumaça verde dos sinalizadores, pequenos jatos brancos no equipamento de Levi, som ambiente de vento sintetizado e música de fundo.
 
 Há também referências à história pelo cenário: o diário de Grisha e a chave do porão dos Yeager perto de uma árvore, a batata de Sasha, uma garrafa de vinho e o lenço vermelho de Mikasa pendurado em um galho. Atrás da muralha, uma folha traz a palavra “TATAKAE”.
 
@@ -29,10 +26,10 @@ Há também referências à história pelo cenário: o diário de Grisha e a cha
 | `P` | Alternar entre três poses de Levi |
 | `L` | Ligar ou desligar a luz |
 | `N` | Ligar ou desligar a neblina |
-| `M` | Ligar ou desligar o som |
+| `M` | Ligar ou desligar a música e o som ambiente |
 | `H` | Mostrar ou ocultar a ajuda |
 
-O som também pode ser ativado pelo botão na página. Ele depende de uma interação do usuário e da disponibilidade da Web Audio API no navegador.
+O botão na página também liga ou desliga a música e o vento juntos. A música é reproduzida em repetição e retoma da posição em que foi pausada. O áudio depende de uma interação do usuário e da disponibilidade da Web Audio API no navegador.
 
 ## Opcionais implementados
 
@@ -41,7 +38,7 @@ O som também pode ser ativado pelo botão na página. Ele depende de uma intera
 - **Vento**: movimento das bandeiras produzido no shader.
 - **Efeitos de partículas**: fumaça no cenário e nos propulsores.
 - **Neblina**: pode ser ligada e desligada pela tecla `N`.
-- **Música, efeitos sonoros e/ou som ambiente**: vento sintetizado, ativado pela tecla `M`.
+- **Música, efeitos sonoros e/ou som ambiente**: música de fundo e vento sintetizado, ativados pela tecla `M`.
 
 ## Modelos e limitações
 
@@ -54,6 +51,7 @@ O carregador próprio implementa um subconjunto de glTF 2.0/GLB 2.0, incluindo h
 - **Kauã Lucca Marques Souza Costa** — [GitHub](https://github.com/Kawalucca).
 - **Hugo** — completar sobrenome e perfil GitHub antes da entrega.
 - **TWGL.js 5.5.4**, de Gregg Tavares — biblioteca auxiliar WebGL, licença MIT: <https://github.com/greggman/twgl.js>.
-- O som ambiente é sintetizado pela aplicação. Os personagens podem ser gerados com `tools/gerar_personagens.py`, as texturas originais com `tools/gerar_recursos.py`, a do gramado com `tools/gerar_grama.py` e a do brasão com `tools/gerar_brasao.py`; a aplicação pronta não precisa das bibliotecas Python usadas para geração.
+- **Música**: “Guren no Yumiya” (Feuerroter Pfeil und Bogen), de Linked Horizon, primeira abertura de *Attack on Titan*. Arquivo fornecido para o projeto: `assets/audio/abertura.mp3`. Referências: [portal oficial de Attack on Titan](https://aot-portal.com/en/music/) e [vídeo da Crunchyroll](https://www.youtube.com/watch?v=8OkpRK2_gVs).
+- O som ambiente é sintetizado pela aplicação. Os personagens podem ser gerados com `tools/gerar_personagens.py`, as texturas originais com `tools/gerar_recursos.py`, a do gramado com `tools/gerar_grama.py`, a do brasão com `tools/gerar_brasao.py` e a do bilhete com `tools/gerar_bilhete.py`; a aplicação pronta não precisa das bibliotecas Python usadas para geração.
 
 As capturas para o Media Kit e os dados completos de autoria ainda precisam ser adicionados antes da entrega.

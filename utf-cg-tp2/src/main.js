@@ -251,6 +251,7 @@ async function main() {
     try {
       const ligado = await audio.alternar();
       botaoSom.textContent = ligado ? "Som: ligado (M)" : "Ativar som (M)";
+      atualizarStatus();
     } catch (erro) {
       console.error(erro);
       atualizarStatus("áudio indisponível");
