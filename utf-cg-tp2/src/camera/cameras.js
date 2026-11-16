@@ -7,10 +7,10 @@ const limitar = (valor, minimo, maximo) => Math.max(minimo, Math.min(maximo, val
 export function criarEstadoCamera() {
   return {
     ativa: 1,
-    alvo: [0, 0, 0],
-    distanciaAutomatica: 10.8,
+    alvo: [0, 0.8, 0],
+    distanciaAutomatica: 15.5,
     anguloAutomatico: 0.12,
-    distanciaOrbital: 10.3,
+    distanciaOrbital: 14.0,
     anguloOrbital: 0.32,
     elevacaoOrbital: 0.48,
   };
@@ -28,9 +28,9 @@ export function atualizarCamera(estado, delta) {
 export function aproximarCamera(estado, deslocamentoRoda) {
   const fator = Math.exp(deslocamentoRoda * 0.001);
   if (estado.ativa === 1) {
-    estado.distanciaAutomatica = limitar(estado.distanciaAutomatica * fator, 6.4, 20);
+    estado.distanciaAutomatica = limitar(estado.distanciaAutomatica * fator, 6.4, 26);
   } else {
-    estado.distanciaOrbital = limitar(estado.distanciaOrbital * fator, 5.5, 20);
+    estado.distanciaOrbital = limitar(estado.distanciaOrbital * fator, 5.5, 26);
   }
 }
 
@@ -42,7 +42,9 @@ export function orbitarCamera(estado, dx, dy) {
 
 export function obterCamera(estado, canvas) {
   const aspecto = Math.max(1, canvas.width) / Math.max(1, canvas.height);
-  const projection = m4.perspective(55 * Math.PI / 180, aspecto, 0.1, 160);
+  // Mantém o diorama visível também em telas estreitas.
+  const fov = 2 * Math.atan(Math.tan(27.5 * Math.PI / 180) / Math.min(aspecto, 1));
+  const projection = m4.perspective(fov, aspecto, 0.1, 160);
 
   let olho;
   if (estado.ativa === 1) {

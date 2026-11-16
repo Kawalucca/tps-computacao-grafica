@@ -1,53 +1,76 @@
 import * as twgl from "../lib/twgl-full.module.js";
 
-// Pequena simulação determinística de partículas.
-// O eixo Y sobe; o vento desloca as partículas no eixo X.
-export function criarParticulas(quantidade = 115) {
+// A fumaça do chão e os pequenos jatos do equipamento usam os mesmos quads,
+// mas têm cores, tamanhos e trajetórias independentes.
+export function criarParticulas() {
   let semente = 63173;
   function aleatorio() {
     semente = (semente * 1664525 + 1013904223) >>> 0;
     return semente / 4294967296;
   }
 
+  // Os dois focos laterais formam os rastros verticais dos sinalizadores.
+  // Os demais continuam como fumaça baixa sobre a clareira.
   const focos = [
-    [-1.3, 0.25, 0.05],
-    [-2.25, 0.3, -0.80],
-    [0.15, 0.20, 2.10],
-    [1.9, 0.15, -1.25],
+    { posicao: [-2.8, 0.06, 1.35], coluna: true },
+    { posicao: [2.6, 0.06, -0.65], coluna: true },
+    { posicao: [0.1, 0.06, 2.65], coluna: false },
+    { posicao: [0.4, 0.06, -2.5], coluna: false },
   ];
-
   const particulas = [];
-  for (let i = 0; i < quantidade; i++) {
-    const foco = focos[i % focos.length];
-    particulas.push({
-      foco,
-      fase: aleatorio(),
-      velocidade: 0.13 + 0.28 * aleatorio(),
-      tamanho: 0.35 + aleatorio() * 0.67,
-      x: (aleatorio() - 0.5) * 0.65,
-      z: (aleatorio() - 0.5) * 0.65,
-      giro: aleatorio() * Math.PI * 2,
-      tipo: i % 6 === 0 ? "poeira" : "fumaça",
-      posicao: [0, 0, 0],
-      alpha: 0,
-    });
+  for (const foco of focos) {
+    const quantidade = foco.coluna ? 56 : 16;
+    for (let i = 0; i < quantidade; i++) {
+      particulas.push({
+        tipo: foco.coluna ? "coluna" : "chao", foco: foco.posicao, fase: aleatorio(),
+        velocidade: 0.08 + aleatorio() * 0.07,
+        x: (aleatorio() - 0.5) * (foco.coluna ? 0.3 : 0.7),
+        z: (aleatorio() - 0.5) * (foco.coluna ? 0.3 : 0.7),
+        tamanho: 0.22 + aleatorio() * 0.12, giro: aleatorio() * Math.PI * 2,
+        posicao: [0, 0, 0], escala: 0, alpha: 0,
+      });
+    }
+  }
+  for (const lado of [-1, 1]) {
+    for (let i = 0; i < 12; i++) {
+      particulas.push({
+        tipo: "jato", lado, fase: aleatorio(),
+        velocidade: 0.9 + aleatorio() * 0.4,
+        x: (aleatorio() - 0.5) * 0.025,
+        giro: aleatorio() * Math.PI * 2,
+        tamanho: 0.025 + aleatorio() * 0.025,
+        posicao: [0, 0, 0], escala: 0, alpha: 0,
+      });
+    }
   }
 
   return {
     particulas,
-    atualizar(delta, tempo) {
+    atualizar(delta, tempo, matrizLevi) {
       for (const p of particulas) {
-        p.fase = (p.fase + delta * p.velocidade * 0.23) % 1;
-        const crescimento = p.fase;
-        const vento = Math.sin(tempo * 0.45 + p.giro) * 0.22;
-        p.posicao = [
-          p.foco[0] + p.x + crescimento * 1.25 + vento,
-          p.foco[1] + crescimento * 3.1,
-          p.foco[2] + p.z + Math.cos(tempo * 0.32 + p.giro) * 0.15,
-        ];
-        // Entrada/saída suave evita saltos ao reiniciar o ciclo.
-        p.alpha = Math.sin(Math.PI * crescimento) * (p.tipo === "poeira" ? 0.20 : 0.28);
-        p.escala = p.tamanho * (0.8 + 1.15 * crescimento);
+        p.fase = (p.fase + delta * p.velocidade) % 1;
+        const t = p.fase;
+        if (p.tipo === "chao" || p.tipo === "coluna") {
+          const coluna = p.tipo === "coluna";
+          p.posicao = [
+            p.foco[0] + p.x + t * (coluna ? 0.12 : 0.25) + Math.sin(tempo * 0.35 + p.giro) * 0.06,
+            p.foco[1] + t * (coluna ? 4.5 : 0.32),
+            p.foco[2] + p.z,
+          ];
+          p.escala = p.tamanho * (0.8 + t * 0.5);
+          p.alpha = Math.sin(Math.PI * t) * 0.27;
+          p.cor = [0.67, 0.91, 0.60];
+        } else if (matrizLevi) {
+          // As posições estão no espaço local do modelo e seguem a pose de Levi.
+          p.posicao = twgl.m4.transformPoint(matrizLevi, [
+            p.lado * 0.42 + p.x + Math.sin(tempo * 4 + p.giro) * t * 0.015,
+            0.58 - t * 0.10,
+            -0.22 - t * 0.32,
+          ]);
+          p.escala = p.tamanho * (1 + t * 1.3);
+          p.alpha = Math.sin(Math.PI * t) * 0.48;
+          p.cor = [0.97, 0.98, 1.0];
+        }
       }
     },
   };
@@ -55,7 +78,6 @@ export function criarParticulas(quantidade = 115) {
 
 export function criarRenderizadorParticulas(gl, vert, frag) {
   const programa = twgl.createProgramInfo(gl, [vert, frag]);
-  // Quad em espaço local; shader ajusta os eixos da câmera (billboard).
   const bufferInfo = twgl.createBufferInfoFromArrays(gl, {
     position: { numComponents: 2, data: [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1] },
   });
@@ -82,13 +104,13 @@ export function criarRenderizadorParticulas(gl, vert, frag) {
           u_position: p.posicao,
           u_size: p.escala,
           u_alpha: p.alpha,
-          u_dust: p.tipo === "poeira",
+          u_color: p.cor,
         });
         twgl.drawBufferInfo(gl, bufferInfo);
       }
       gl.depthMask(true);
       gl.disable(gl.BLEND);
       gl.enable(gl.CULL_FACE);
-    }
+    },
   };
 }

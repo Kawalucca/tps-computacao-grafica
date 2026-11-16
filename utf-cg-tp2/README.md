@@ -1,104 +1,59 @@
 # Attack on Titan — Diorama 3D
 
-Trabalho Prático 2 de Computação Gráfica.
+Trabalho Prático 2 de Computação Gráfica: um diorama inspirado no confronto entre Levi Ackerman e Zeke Yeager, o Titã Bestial. É um projeto estudantil não oficial.
 
-Projeto desenvolvido em JavaScript, WebGL 2, GLSL e TWGL.js. A proposta é construir um diorama tridimensional semirrealista inspirado em *Shingeki no Kyojin (Attack on Titan)*, representando o confronto entre Levi Ackerman e Zeke Yeager em sua forma de Titã Bestial.
-
-O projeto não utiliza THREE.js. A renderização é realizada diretamente com WebGL 2, com apoio da biblioteca TWGL.js.
-
-## 1. A Cena
-
-A composição planejada apresenta Zeke à esquerda e Levi à direita, com a espada de Levi direcionada à região da boca do Titã Bestial. O cenário contém base circular, hemisfério inferior, ruínas, destroços, vigas e um canhão com parte móvel.
-
-### Implementado nas etapas incluídas neste pacote
-
-**Etapa 1 — Mundo e geometria inicial**
-- Disco circular no plano XZ.
-- Hemisfério inferior da base.
-- Ruínas de pedra, destroços e vigas.
-- Canhão hierárquico com base fixa e tubo articulado.
-- Câmera inicial com projeção perspectiva.
-
-**Etapa 2 — Personagens e carregamento glTF/GLB**
-- Carregador próprio para um subconjunto do glTF 2.0 e GLB 2.0.
-- Leitura de buffers externos e do chunk BIN do GLB.
-- Leitura de hierarquia de nós e transformações.
-- Primitivas triangulares, posições, coordenadas UV e índices.
-- Suporte básico a `baseColorFactor` e `baseColorTexture`.
-- Estados de posição e orientação de Levi.
-- Alternância entre três poses pela tecla `P`.
-- Espada construída com sólidos do projeto.
-- Geometrias provisórias de Levi e Zeke enquanto os modelos reais não são adicionados.
-
-### Controles atuais
-
-- `P`: alterna entre as três posições/orientações configuradas para Levi.
-
-## 2. Criadores
-
-- **Kauã Lucca Marques Souza Costa** — [GitHub](https://github.com/Kawalucca)
-- **Hugo** — completar sobrenome e perfil GitHub antes da entrega.
-
-## 3. Media Kit
-
-As capturas de tela serão incluídas após a execução e os ajustes visuais da cena.
-
-- `assets/screenshots/`: pasta reservada para capturas do projeto.
-
-## 4. Opcionais e etapas futuras
-
-O planejamento geral do projeto foi dividido em **cinco etapas**. Este pacote reúne o código integrado das duas primeiras.
-
-**Etapa 3 — Câmeras e efeitos visuais**
-- Segunda câmera orbital controlada pelo mouse.
-- Câmera automática e controle de zoom.
-- Skybox, skysphere ou skydome.
-- Partículas de fumaça e poeira.
-- Neblina com controle pelo teclado.
-
-**Etapa 4 — Iluminação, materiais e texturas**
-- Modelo de iluminação Phong.
-- Luz direcional e, se necessário, luzes pontuais.
-- Materiais dos personagens e objetos.
-- Texturas para terreno, pedra, madeira e metal.
-- Controles de iluminação previstos no enunciado.
-
-**Etapa 5 — Integração e finalização**
-- Áudio ambiente, música ou efeitos sonoros.
-- Ajustes de escala, enquadramento e composição.
-- Capturas de tela e atualização do Media Kit.
-- Créditos e licenças de todos os recursos externos.
-- Testes finais e publicação.
-
-Os itens das etapas futuras estão planejados, não concluídos. Os modelos atuais de Levi e Zeke são provisórios e ainda precisam ser substituídos pelos definitivos.
-
-## 5. Créditos
-
-- **TWGL.js 5.5.4** — Gregg Tavares. Biblioteca auxiliar para operações WebGL, sob licença MIT: https://github.com/greggman/twgl.js
-- **Modelos de Levi e Zeke:** modelos provisórios, simplificados e estilizados, usados apenas para testar o carregador GLB. Serão substituídos pelos definitivos; autor, URL de origem e licença serão registrados nessa troca.
-- **Texturas, imagens e áudio:** registrar as respectivas fontes e licenças quando forem incorporados.
+O projeto usa JavaScript, WebGL 2, shaders GLSL e TWGL.js para auxiliar as operações WebGL. A cena não utiliza THREE.js nem exige instalação de dependências para executar.
 
 ## Execução local
 
-O projeto utiliza módulos ES e carrega shaders e modelos por `fetch`. Execute o servidor HTTP a partir da raiz do repositório:
+É necessário um navegador com suporte a WebGL 2 e um servidor HTTP, pois os módulos, shaders e modelos são carregados por requisições `fetch`. Na raiz deste repositório, execute:
 
 ```bash
 py -m http.server 8000
 ```
 
-Abra no navegador:
+Depois, abra <http://localhost:8000/utf-cg-tp2/>. Em sistemas nos quais o comando é `python3`, use `python3 -m http.server 8000`. Abrir diretamente o arquivo HTML pode impedir o carregamento dos recursos.
 
-```text
-http://localhost:8000/utf-cg-tp2/
-```
+## Cena e controles
 
-## Limitações conhecidas do carregador glTF/GLB
+A cena inclui uma base circular com gramado e hemisfério inferior, árvores, muralha com portão, ruínas, destroços, vigas, bandeiras com as Asas da Liberdade, canhão articulado e os personagens. A iluminação usa componentes ambiente, difusa e especular; há texturas, céu, neblina, fumaça verde dos sinalizadores, pequenos jatos brancos no equipamento de Levi e som ambiente de vento sintetizado.
 
-O carregador implementa um subconjunto do glTF 2.0. Nesta versão, ainda não oferece:
-- skinning e animações esqueléticas;
-- morph targets;
-- compressão Draco/Meshopt;
-- implementação completa do pipeline PBR;
-- todos os modos de transparência e extensões do padrão.
+Há também referências à história pelo cenário: o diário de Grisha e a chave do porão dos Yeager perto de uma árvore, a batata de Sasha, uma garrafa de vinho e o lenço vermelho de Mikasa pendurado em um galho. Atrás da muralha, uma folha traz a palavra “TATAKAE”.
 
-Modelos rigados podem ser carregados apenas como malhas estáticas, sem deformação esquelética. A alternância das três poses de Levi nesta etapa é realizada pela transformação do modelo inteiro.
+| Controle | Ação |
+| --- | --- |
+| `1` | Selecionar câmera automática |
+| `2` | Selecionar câmera orbital |
+| Arrastar com o botão esquerdo | Girar a câmera orbital |
+| Roda do mouse | Aproximar ou afastar |
+| `P` | Alternar entre três poses de Levi |
+| `L` | Ligar ou desligar a luz |
+| `N` | Ligar ou desligar a neblina |
+| `M` | Ligar ou desligar o som |
+| `H` | Mostrar ou ocultar a ajuda |
+
+O som também pode ser ativado pelo botão na página. Ele depende de uma interação do usuário e da disponibilidade da Web Audio API no navegador.
+
+## Opcionais implementados
+
+- **Modelos tridimensionais**: uso de modelos GLB para os personagens.
+- **Skybox, skyphere ou skydome**: céu procedural desenhado em uma esfera que acompanha a câmera.
+- **Vento**: movimento das bandeiras produzido no shader.
+- **Efeitos de partículas**: fumaça no cenário e nos propulsores.
+- **Neblina**: pode ser ligada e desligada pela tecla `N`.
+- **Música, efeitos sonoros e/ou som ambiente**: vento sintetizado, ativado pela tecla `M`.
+
+## Modelos e limitações
+
+Os arquivos `assets/models/levi.glb` e `assets/models/zeke.glb` são modelos demonstrativos originais, simplificados e estilizados. Não são modelos oficiais nem foram extraídos do anime. As poses de Levi são feitas por transformações do modelo inteiro, sem animação esquelética.
+
+O carregador próprio implementa um subconjunto de glTF 2.0/GLB 2.0, incluindo hierarquia, malhas triangulares, normais, coordenadas UV e materiais básicos com cor e textura base. Ele não implementa skinning, animações esqueléticas, morph targets, compressão Draco/Meshopt ou o pipeline PBR completo. Modelos externos devem ser exportados como malhas estáticas compatíveis, e seus autores, fontes e licenças devem ser registrados. Consulte [a documentação dos modelos](assets/models/README.md).
+
+## Recursos e créditos
+
+- **Kauã Lucca Marques Souza Costa** — [GitHub](https://github.com/Kawalucca).
+- **Hugo** — completar sobrenome e perfil GitHub antes da entrega.
+- **TWGL.js 5.5.4**, de Gregg Tavares — biblioteca auxiliar WebGL, licença MIT: <https://github.com/greggman/twgl.js>.
+- O som ambiente é sintetizado pela aplicação. Os personagens podem ser gerados com `tools/gerar_personagens.py`, as texturas originais com `tools/gerar_recursos.py`, a do gramado com `tools/gerar_grama.py` e a do brasão com `tools/gerar_brasao.py`; a aplicação pronta não precisa das bibliotecas Python usadas para geração.
+
+As capturas para o Media Kit e os dados completos de autoria ainda precisam ser adicionados antes da entrega.

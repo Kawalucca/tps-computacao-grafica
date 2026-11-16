@@ -1,6 +1,19 @@
 // Geometrias básicas do diorama.
 // O eixo Y representa a altura; o chão fica no plano XZ.
 
+// Uma folha fina, com a face texturizada voltada para cima.
+export function criarFolha() {
+  return {
+    position: { numComponents: 3, data: [
+      -.5, 0, -.5, -.5, 0, .5, .5, 0, -.5, .5, 0, .5,
+    ] },
+    normal: { numComponents: 3, data: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0] },
+    // Texto legível ao observar o papel pelo lado de trás da muralha.
+    texcoord: { numComponents: 2, data: [1, 1, 1, 0, 0, 1, 0, 0] },
+    indices: { numComponents: 3, data: [0, 1, 2, 2, 1, 3] },
+  };
+}
+
 export function criarDisco(raio, segmentos) {
   const position = [0, 0, 0];
   const normal = [0, 1, 0];

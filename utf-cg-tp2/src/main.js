@@ -1,10 +1,12 @@
 // Trabalho Prático 2 — Attack on Titan (WebGL2 + TWGL.js).
 // Etapas 1–5: terreno, hierarquia, modelos GLB, câmeras, iluminação e efeitos.
 import * as twgl from "./lib/twgl-full.module.js";
-import { criarDisco, criarHemisferio } from "./scene/world.js";
+import { criarDisco, criarHemisferio, criarFolha } from "./scene/world.js";
 import { criarMatrizModelo } from "./scene/transform.js";
 import { criarRuinas } from "./scene/ruins.js";
-import { criarDestrocos, criarVigas } from "./scene/debris.js";
+import { criarMuralha } from "./scene/wall.js";
+import { criarEasterEggs } from "./scene/easter-eggs.js";
+import { criarDestrocos, criarVigas, criarCopas, criarGrama } from "./scene/debris.js";
 import { criarEstadoCanhao, atualizarCanhao, obterPartesCanhao } from "./scene/cannon.js";
 import { criarTecido, obterBandeiras } from "./scene/flags.js";
 import {
@@ -21,6 +23,7 @@ import { criarEstadoLevi } from "./scene/levi.js";
 import { criarEstadoZeke } from "./scene/zeke.js";
 import { criarMatrizPersonagem, obterPose, alternarPose } from "./scene/character.js";
 import { criarPartesEspada } from "./scene/sword.js";
+import { criarCabo } from "./scene/cable.js";
 
 const m4 = twgl.m4;
 
@@ -71,16 +74,18 @@ async function main() {
   const renderizadorParticulas = criarRenderizadorParticulas(gl, ...shaders.slice(6, 8));
 
   const geometrias = {
-    disco: twgl.createBufferInfoFromArrays(gl, criarDisco(4, 96)),
-    hemisferio: twgl.createBufferInfoFromArrays(gl, criarHemisferio(4, 96, 32)),
+    disco: twgl.createBufferInfoFromArrays(gl, criarDisco(5.5, 96)),
+    hemisferio: twgl.createBufferInfoFromArrays(gl, criarHemisferio(5.5, 96, 32)),
     cubo: twgl.primitives.createCubeBufferInfo(gl, 1),
     esfera: twgl.primitives.createSphereBufferInfo(gl, 1, 16, 12),
     cilindro: twgl.primitives.createCylinderBufferInfo(gl, 0.5, 1, 16, 1),
     tecido: twgl.createBufferInfoFromArrays(gl, criarTecido()),
+    grama: twgl.createBufferInfoFromArrays(gl, criarGrama()),
+    folha: twgl.createBufferInfoFromArrays(gl, criarFolha()),
   };
 
   const branco = criarTexturaBranca(gl);
-  const nomesTexturas = ["terra", "pedra", "madeira", "metal", "rocha"];
+  const nomesTexturas = ["terra", "pedra", "madeira", "metal", "rocha", "grama", "brasao", "bilhete"];
   const texturas = {};
   for (const nome of nomesTexturas) {
     texturas[nome] = twgl.createTexture(gl, {
@@ -92,8 +97,11 @@ async function main() {
   }
 
   const ruinas = criarRuinas();
+  const muralha = criarMuralha();
+  const easterEggs = criarEasterEggs();
   const destrocos = criarDestrocos();
   const vigas = criarVigas();
+  const copas = criarCopas();
   const bandeiras = obterBandeiras();
   const canhao = criarEstadoCanhao();
   const levi = criarEstadoLevi();
@@ -156,7 +164,7 @@ async function main() {
         [0.54, 0.47, 0.39, 1], camera, { textura: texturas.madeira });
       desenharObjeto(geometrias.tecido,
         criarMatrizModelo(m4, bandeira.tecido, [1, 1, 1], bandeira.rotacao),
-        bandeira.cor, camera, { duplaFace: true, vento: 0.22, brilho: 5 });
+        [1, 1, 1, 1], camera, { textura: texturas.brasao, duplaFace: true, vento: 0.22, brilho: 5 });
     }
   }
 
@@ -270,7 +278,6 @@ async function main() {
     tempo += delta;
     atualizarCamera(cameraEstado, delta);
     atualizarCanhao(canhao, delta);
-    particulas.atualizar(delta, tempo);
 
     twgl.resizeCanvasToDisplaySize(canvas, window.devicePixelRatio || 1);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -280,21 +287,41 @@ async function main() {
     ceu.desenhar(camera, tempo);
 
     desenharObjeto(geometrias.hemisferio, m4.identity(), [.63,.65,.67,1], camera,
-      { textura: texturas.rocha, texScale: [5, 3], brilho: 8 });
-    desenharObjeto(geometrias.disco, m4.identity(), [.84,.78,.66,1], camera,
-      { textura: texturas.terra, texScale: [5,5], brilho: 9 });
+      { textura: texturas.rocha, texScale: [7, 4], brilho: 8 });
+    desenharObjeto(geometrias.disco, m4.identity(), [.94,.98,.91,1], camera,
+      { textura: texturas.grama, texScale: [7,7], brilho: 5 });
+    desenharObjeto(geometrias.grama, m4.identity(), [.25,.48,.15,1], camera,
+      { duplaFace: true, brilho: 4 });
+    desenharObjeto(geometrias.folha,
+      criarMatrizModelo(m4, [1.55, .025, -4.8], [.70, 1, .46], [0, .10, 0]),
+      [1, 1, 1, 1], camera, { textura: texturas.bilhete, brilho: 2, especular: 0 });
 
     desenharLista(ruinas, geometrias.cubo, camera, texturas.pedra);
+    desenharLista(muralha.pedras, geometrias.cubo, camera, texturas.pedra);
+    desenharLista(muralha.madeira, geometrias.cubo, camera, texturas.madeira);
+    desenharLista(easterEggs.cubos, geometrias.cubo, camera, null);
+    desenharLista(easterEggs.cilindros, geometrias.cilindro, camera, null);
+    desenharLista(easterEggs.esferas, geometrias.esfera, camera, null);
     desenharLista(destrocos, geometrias.esfera, camera, texturas.pedra);
     desenharLista(vigas, geometrias.cilindro, camera, texturas.madeira);
+    desenharLista(copas, geometrias.esfera, camera, null, 5);
     desenharCanhao(camera);
     desenharBandeiras(camera);
 
     const matrizZeke = criarMatrizPersonagem(zeke, modeloZeke, twgl);
     const matrizLevi = criarMatrizPersonagem(levi, modeloLevi, twgl);
+    particulas.atualizar(delta, tempo, matrizLevi);
     if (!desenharModelo(modeloZeke, matrizZeke, camera)) desenharProvisorio(camera, matrizZeke, false);
     if (!desenharModelo(modeloLevi, matrizLevi, camera)) desenharProvisorio(camera, matrizLevi, true);
     desenharEspada(camera);
+    const cabo = criarCabo(m4, matrizLevi, matrizZeke);
+    if (cabo) {
+      desenharObjeto(geometrias.cilindro, cabo.matriz, [.67, .70, .70, 1], camera,
+        { brilho: 80, especular: 0.45 });
+      desenharObjeto(geometrias.esfera,
+        criarMatrizModelo(m4, cabo.destino, [.055, .055, .055]),
+        [.34, .36, .37, 1], camera, { brilho: 70, especular: 0.4 });
+    }
 
     renderizadorParticulas.desenhar(particulas, camera);
     requestAnimationFrame(quadro);

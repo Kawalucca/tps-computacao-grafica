@@ -10,5 +10,5 @@ export const POSES_ZEKE = [
 ];
 
 export function criarEstadoZeke() {
-  return criarEstadoPersonagem(POSES_ZEKE, 3.15);
+  return criarEstadoPersonagem(POSES_ZEKE, 4.2);
 }
