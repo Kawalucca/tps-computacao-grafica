@@ -40,7 +40,17 @@ O botão na página também liga ou desliga a música e o vento juntos. A músic
 
 ## Media Kit
 
-As capturas de tela da cena serão adicionadas posteriormente.
+![Visão geral do diorama, com Levi, o Titã Bestial, a muralha e o terreno circular.](assets/media-kit/visao-geral.png)
+
+*Visão geral do diorama e dos elementos do cenário.*
+
+![Vista lateral do confronto, com as bandeiras, as árvores e os destroços do cenário.](assets/media-kit/vista-lateral.png)
+
+*Vista lateral da cena, destacando as bandeiras e a composição do cenário.*
+
+![Detalhe do confronto entre Levi e o Titã Bestial, visto entre as árvores.](assets/media-kit/confronto-levi-zeke.png)
+
+*Detalhe do confronto entre Levi e o Titã Bestial.*
 
 ## Opcionais
 
